@@ -117,7 +117,7 @@ class _CourseOngoingScreenState extends State<CourseOngoingScreen> {
                                       .studentCourseList[index].courseName,
                                   batchName: "",
                                   image: HttpUrls.imgBaseUrl + studentCourseController.studentCourseList[index].imagePath,
-                                  batchStart: studentCourseController.studentCourseList[index].batchID != 0 ? "Batch start : ${formatDate(studentCourseController.studentCourseList[index].batchStart)}" : 'One on one',
+                                  batchStart: studentCourseController.studentCourseList[index].batchID != 0 ? "Batch start : ${formatDate(studentCourseController.studentCourseList[index].batchStart)}" : '',
                                   batchEnd: studentCourseController.studentCourseList[index].batchID != 0 ? "Batch End : ${formatDate(studentCourseController.studentCourseList[index].batchEnd)}" : 'Batch End : ',
                                   expiryDate: ''),
                             ),

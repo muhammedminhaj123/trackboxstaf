@@ -1,5 +1,5 @@
 class HttpUrls {
-  // static String baseUrl = 'https://rw4vb3zj-3515.inc1.devtunnels.ms/';
+  //static String baseUrl = 'https://rw4vb3zj-3515.inc1.devtunnels.ms/';
   static String baseUrl = 'https://happyenglishapi.ufstech.co.in';
 
   static String imgBaseUrl =
