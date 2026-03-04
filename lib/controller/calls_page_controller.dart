@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:developer';
 import 'dart:async';
 
 // import 'package:awesome_notifications/awesome_notifications.dart';
@@ -12,6 +14,7 @@ import 'package:breffini_staff/http/http_requests.dart';
 import 'package:breffini_staff/http/http_urls.dart';
 
 import 'package:breffini_staff/model/current_call_model.dart';
+import 'package:breffini_staff/model/faculty_batch_student_model.dart';
 import 'package:breffini_staff/model/get_student_timeslot_model.dart';
 import 'package:breffini_staff/model/student_course_model.dart';
 import 'package:breffini_staff/model/student_list_model.dart';
@@ -39,12 +42,14 @@ class CallandChatController extends GetxController {
   var getStudentTimeSlotsList = <GetStudentTimeSlotsModel>[].obs;
   var getStudentList = <StudentListModel>[].obs;
   var getStudentCourseList = <StudentListCourseModel>[].obs;
+  var facultyBatchStudentsList = <FacultyBatchStudentModel>[].obs;
   final IndividualCallController controller =
       Get.put(IndividualCallController());
 
   RxString audioCallFormatedTime = "00:00".obs;
   RxBool isOneToOneLoading = false.obs;
   RxBool isStudentListLoading = false.obs;
+  RxBool isFacultyBatchStudentsLoading = false.obs;
 
   // RxInt currentCallId=0.obs;
   // RxString currentCallerName="".obs;
@@ -420,5 +425,63 @@ class CallandChatController extends GetxController {
           break;
       }
     });
+  }
+
+  Future<void> getFacultyBatchStudents(String teacherId) async {
+    try {
+      isFacultyBatchStudentsLoading.value = true;
+      final response = await HttpRequest.httpGetRequest(
+          endPoint: "${HttpUrls.getFacultyBatchStudents}$teacherId",
+          showLoader: false);
+
+      if (response == null) {
+        throw Exception('Response is null');
+      }
+
+      if (response.statusCode == 200) {
+        final rawResponseData = response.data;
+        log("BATCH STUDENTS RAW DATA: $rawResponseData");
+
+        final responseData = rawResponseData is String
+            ? jsonDecode(rawResponseData)
+            : rawResponseData;
+
+        if (responseData is List<dynamic>) {
+          if (responseData.isNotEmpty && responseData[0] is List) {
+            facultyBatchStudentsList.value = (responseData[0] as List)
+                .map((result) => FacultyBatchStudentModel.fromJson(result))
+                .toList();
+          } else {
+            facultyBatchStudentsList.value = responseData
+                .map((result) => FacultyBatchStudentModel.fromJson(result))
+                .toList();
+          }
+          log("MAPPED STUDENTS COUNT: ${facultyBatchStudentsList.length}");
+        } else if (responseData is Map<String, dynamic>) {
+          // Handle case where it might be wrapped in a map
+          if (responseData.containsKey('data') &&
+              responseData['data'] is List) {
+            facultyBatchStudentsList.value = (responseData['data'] as List)
+                .map((result) => FacultyBatchStudentModel.fromJson(result))
+                .toList();
+          } else {
+            facultyBatchStudentsList.value = [
+              FacultyBatchStudentModel.fromJson(responseData)
+            ];
+          }
+          log("MAPPED STUDENTS COUNT (MAP): ${facultyBatchStudentsList.length}");
+        } else {
+          throw Exception(
+              'Unexpected response data type: ${responseData.runtimeType}');
+        }
+      } else {
+        throw Exception('Failed to load students: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error fetching batch students: $error');
+    } finally {
+      isFacultyBatchStudentsLoading.value = false;
+      update();
+    }
   }
 }

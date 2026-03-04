@@ -1,6 +1,6 @@
 class HttpUrls {
-  //static String baseUrl = 'https://rw4vb3zj-3515.inc1.devtunnels.ms/';
-  static String baseUrl = 'https://happyenglishapi.ufstech.co.in';
+  static String baseUrl = 'https://rw4vb3zj-3515.inc1.devtunnels.ms/';
+  //static String baseUrl = 'https://happyenglishapi.ufstech.co.in';
 
   static String imgBaseUrl =
       'https://pub-11714a99f3bd420ca95f23dda2af714b.r2.dev/';
@@ -79,4 +79,7 @@ class HttpUrls {
 
   // Exam Results
   static String getExamResults = '/student/Get_Exam_Results/';
+
+  static String getFacultyBatchStudents =
+      '/teacher/Get_Faculty_Batch_Students/';
 }

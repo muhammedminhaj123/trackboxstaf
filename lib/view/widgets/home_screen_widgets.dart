@@ -284,7 +284,7 @@ Widget callStudentWidget(
         ),
 
         subtitle:
-            content.isNotEmpty && startTime.isNotEmpty && endTime.isNotEmpty
+            content.isNotEmpty || (startTime.isNotEmpty && endTime.isNotEmpty)
                 ? Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Column(
