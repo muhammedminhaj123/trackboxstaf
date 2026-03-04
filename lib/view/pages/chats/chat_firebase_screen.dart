@@ -1670,6 +1670,7 @@ class _ChatFireBaseScreenState extends State<ChatFireBaseScreen> {
   }
 
   stopRecording(bool isStopAndExit) async {
+    _stopTimer();
     try {
       final path = await _audioRecorder.stop();
       setState(() {
