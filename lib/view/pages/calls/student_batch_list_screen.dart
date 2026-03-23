@@ -6,6 +6,7 @@ import 'package:breffini_staff/view/pages/chats/widgets/loading_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class StudentBatchListScreen extends StatefulWidget {
@@ -34,7 +35,7 @@ class _StudentBatchListScreenState extends State<StudentBatchListScreen> {
     return Scaffold(
       backgroundColor: ColorResources.colorgrey200,
       appBar: CustomAppBar(
-        title: "Students",
+        title: "Batches",
         isStudentList: false,
         controller: searchController.value,
         onChanged: (value) {
@@ -82,45 +83,39 @@ class _StudentBatchListScreenState extends State<StudentBatchListScreen> {
             physics: const AlwaysScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               final batch = filteredList[index];
+
+              // Date Formatting
+              String formatDate(String dateStr) {
+                if (dateStr.isEmpty) return 'N/A';
+                try {
+                  DateTime dateTime = DateTime.parse(dateStr);
+                  return DateFormat('dd MMM yyyy').format(dateTime);
+                } catch (e) {
+                  return dateStr;
+                }
+              }
+
+              final String formattedStart = formatDate(batch.batchStart);
+              final String formattedEnd = formatDate(batch.batchEnd);
+
               return Container(
-                margin: EdgeInsets.only(bottom: 12.h),
+                margin: EdgeInsets.only(bottom: 16.h),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: ColorResources.colorgrey300.withOpacity(0.5),
+                    width: 1,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: ListTile(
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  title: Text(
-                    batch.batchNames ?? batch.courseName,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: ColorResources.colorgrey900,
-                    ),
-                  ),
-                  subtitle: Padding(
-                    padding: EdgeInsets.only(top: 4.h),
-                    child: Text(
-                      "${batch.courseName} | ${batch.batchStart} - ${batch.batchEnd}",
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12.sp,
-                        color: ColorResources.colorgrey500,
-                      ),
-                    ),
-                  ),
-                  trailing: Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16.sp,
-                    color: ColorResources.colorgrey400,
-                  ),
+                child: InkWell(
                   onTap: () {
                     if (batch.batchIDs != null) {
                       Get.to(() => BatchStudentListScreen(
@@ -135,6 +130,87 @@ class _StudentBatchListScreenState extends State<StudentBatchListScreen> {
                       );
                     }
                   },
+                  borderRadius: BorderRadius.circular(16.r),
+                  child: Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                batch.batchNames ?? batch.courseName,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: ColorResources.colorgrey900,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              size: 14.sp,
+                              color: ColorResources.colorgrey400,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 12.h),
+                        Divider(
+                          height: 1,
+                          color: ColorResources.colorgrey200,
+                        ),
+                        SizedBox(height: 12.h),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.book_outlined,
+                              size: 16.sp,
+                              color: ColorResources.colorBlue600,
+                            ),
+                            SizedBox(width: 8.w),
+                            Expanded(
+                              child: Text(
+                                "Course: ${batch.courseName}",
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: ColorResources.colorgrey700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8.h),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              size: 16.sp,
+                              color: Colors.orange,
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              "Duration: ",
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w500,
+                                color: ColorResources.colorgrey600,
+                              ),
+                            ),
+                            Text(
+                              "$formattedStart - $formattedEnd",
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: ColorResources.colorgrey800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               );
             },
