@@ -1,632 +1,213 @@
 import 'dart:async';
-
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:breffini_staff/controller/calls_page_controller.dart';
-import 'package:breffini_staff/controller/chat_firebase_controller.dart';
-import 'package:breffini_staff/controller/individual_call_controller.dart';
-import 'package:breffini_staff/controller/live_controller.dart';
-import 'package:breffini_staff/controller/notification_controller.dart';
-import 'package:breffini_staff/controller/ongoing_call_controller.dart';
-import 'package:breffini_staff/controller/profile_controller.dart';
-import 'package:breffini_staff/core/utils/extentions.dart';
-import 'package:breffini_staff/core/utils/firebase_utils.dart';
-import 'package:breffini_staff/core/utils/pref_utils.dart';
-import 'package:breffini_staff/firebase_options.dart';
-import 'package:breffini_staff/http/chat_socket.dart';
-import 'package:breffini_staff/http/http_urls.dart';
-import 'package:breffini_staff/model/ongoing_call_model.dart';
-import 'package:breffini_staff/view/pages/calls/incoming_call_screen.dart';
-import 'package:breffini_staff/view/pages/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_callkit_incoming_yoer/entities/android_params.dart';
-import 'package:flutter_callkit_incoming_yoer/entities/call_event.dart';
-import 'package:flutter_callkit_incoming_yoer/entities/call_kit_params.dart';
-import 'package:flutter_callkit_incoming_yoer/entities/ios_params.dart';
-import 'package:flutter_callkit_incoming_yoer/entities/notification_params.dart';
-import 'package:flutter_callkit_incoming_yoer/flutter_callkit_incoming.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_callkit_incoming_yoer/flutter_callkit_incoming.dart';
 import 'package:get/get.dart';
-import 'package:breffini_staff/core/utils/image_constants.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // ==============================================================================
-// 1. BACKGROUND HANDLER (Pure Top-Level function)
+// 1. BACKGROUND HANDLER (Top-Level Function)
 // ==============================================================================
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  try {
-    // A. Initialize Firebase (Critical for background isolation)
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-      await PrefUtils().init();
-      print("DEBUG: Background Handler: Firebase initialized successfully");
-    }
+  await Firebase.initializeApp();
+  print('DEBUG: Background Message Received: ${message.messageId}');
 
-    // B. Handle CallKit Specifics
-    // NOTE: We keep GetX dependency here only because the existing CallKit logic relies on it.
-    // In a pure clean architecture, we would avoid GetX in background isolates.
-    if (!Get.isRegistered<ProfileController>()) {
-      Get.put(ProfileController(), permanent: true);
-    }
-    if (!Get.isRegistered<CallandChatController>()) {
-      Get.put(CallandChatController(), permanent: true);
-    }
-
-    var payload = message.data;
-    print("DEBUG: BACKGROUND MESSAGE PAYLOAD: $payload");
-    if (message.notification != null) {
-      print(
-          "DEBUG: BACKGROUND NOTIFICATION: Title=${message.notification!.title}, Body=${message.notification!.body}");
-    }
-    String type = payload.containsKey("type") ? payload['type'] : "";
-
-    if (type == "new_call" || type == "new_live") {
-      // Original CallKit logic from user's code
-      await FirebaseUtils.listenCalls();
-      if (message.data.containsKey('timestamp')) {
-        DateTime sendTime = DateTime.parse(message.data['timestamp']).toUtc();
-        DateTime arrivalTime = DateTime.now().toUtc();
-        int delayInSeconds = arrivalTime.difference(sendTime).inSeconds;
-
-        if (delayInSeconds <= 50) {
-          Get.put(CallandChatController()).listenIncomingCallNotification();
-        }
-      }
-    } else {
-      // C. Normal Notification Logic
-      // Android automatically shows the notification if "notification" payload exists.
-      // We do NOT need to show a local notification here manually.
-      print("DEBUG: Background Message: ${message.messageId}");
-    }
-  } catch (e, stackTrace) {
-    print("DEBUG: Error in background message handler: $e");
-    print("DEBUG: Stack trace: $stackTrace");
-  }
+  // NOTE: FCM automatically creates a notification tray item for 'notification' payloads.
+  // We only need to manually show valid notifications if it's a data-only message
+  // and we want to control the display. But for standard behavior, FCM SDK handles it.
 }
 
 // ==============================================================================
-// 2. CALLKIT HANDLERS
-// ==============================================================================
-@pragma('vm:entry-point')
-void notificationTapBackground(NotificationResponse notificationResponse) {
-  print('DEBUG: notification(${notificationResponse.id}) action tapped: '
-      '${notificationResponse.actionId} with'
-      ' payload: ${notificationResponse.payload}');
-  if (notificationResponse.input?.isNotEmpty ?? false) {
-    print(
-        'DEBUG: notification action tapped with input: ${notificationResponse.input}');
-  }
-}
-
-@pragma('vm:entry-point')
-Future<void> showCallkitIncoming(
-    String callId,
-    String callerName,
-    String profileUrl,
-    String callType,
-    Map<String, dynamic> data,
-    bool isMissedCall) async {
-  String avatarUrl = Platform.isAndroid
-      // ? 'file:///android_asset/flutter_assets/assets/images/logo.jpg' // Might cause issues if missing
-      ? ""
-      : "";
-
-  final params = CallKitParams(
-    id: callId,
-    nameCaller: callerName,
-    appName: 'Breffni',
-    avatar: avatarUrl,
-    handle: '0123456789',
-    type: callType == "Video" ? 1 : 0,
-    duration: 30000,
-    textAccept: 'Accept',
-    textDecline: 'Decline',
-    missedCallNotification: const NotificationParams(
-      showNotification: true,
-      isShowCallback: false,
-      subtitle: 'Missed call',
-      callbackText: '',
-    ),
-    extra: data,
-    headers: <String, dynamic>{'apiKey': 'Abc@123!', 'platform': 'flutter'},
-    android: const AndroidParams(
-      isCustomNotification: true,
-      isCustomSmallExNotification: true,
-      isShowFullLockedScreen: true,
-      isShowLogo: false,
-      incomingCallNotificationChannelName: "high_importance_channel_call",
-      ringtonePath: 'system_ringtone_default',
-      backgroundColor: '#0955fa',
-      backgroundUrl: ImageConstant.breffniLogo,
-      actionColor: '#4CAF50',
-      textColor: '#ffffff',
-    ),
-    ios: const IOSParams(
-      iconName: 'CallKitLogo',
-      supportsVideo: true,
-      maximumCallGroups: 2,
-      maximumCallsPerCallGroup: 1,
-      audioSessionMode: 'default',
-      audioSessionActive: true,
-      audioSessionPreferredSampleRate: 44100.0,
-      audioSessionPreferredIOBufferDuration: 0.005,
-      supportsDTMF: true,
-      supportsHolding: true,
-      supportsGrouping: false,
-      supportsUngrouping: false,
-      ringtonePath: 'system_ringtone_default',
-    ),
-  );
-  if (isMissedCall) {
-    await FlutterCallkitIncoming.showMissCallNotification(params);
-  } else {
-    await FlutterCallkitIncoming.showCallkitIncoming(params);
-  }
-}
-
-Future<void> handleNotification(RemoteMessage message) async {
-  // Original handleNotification logic maintained for CallKit compat
-  if (message.data.isNotEmpty) {
-    String channelKey = "";
-    if (message.data['type'] == 'new_call') {
-      channelKey = 'call_channel';
-    } else {
-      channelKey = 'message_channel';
-    }
-
-    if (Get.currentRoute != "/IncomingCallPage") {
-      String callId = message.data.containsKey("id") ? message.data['id'] : "";
-      String callerName = message.data.containsKey("Caller_Name")
-          ? message.data['Caller_Name']
-          : "";
-      String callType = message.data.containsKey("call_type")
-          ? message.data['call_type']
-          : "";
-      String profileImgUrl = message.data.containsKey("Profile_Photo_Img")
-          ? message.data['Profile_Photo_Img']
-          : "";
-
-      if (channelKey == "call_channel") {
-        // ... (Original logic to check ongoing calls) ...
-        List<OnGoingCallsModel> callList =
-            await Get.put(CallOngoingController()).getOngoingCallsApi();
-        if (callList.isNotEmpty && callList[0].id.toString() == callId) {
-          if (!callId.isNullOrEmpty()) {
-            var calls = await FlutterCallkitIncoming.activeCalls();
-            if (calls is List && calls.isNotEmpty) {
-              if (!calls.any((value) => value["id"].toString() == callId)) {
-                showCallkitIncoming(callId, callerName, profileImgUrl, callType,
-                    message.data, false);
-              }
-            } else {
-              showCallkitIncoming(callId, callerName, profileImgUrl, callType,
-                  message.data, false);
-            }
-          }
-        } else {
-          await FlutterCallkitIncoming.endAllCalls();
-        }
-      }
-    }
-  }
-}
-// ==============================================================================
-
-// ==============================================================================
-// 3. MAIN SERVICE CLASS
+// 2. NOTIFICATION SERVICE CLASS
 // ==============================================================================
 class NotificationService {
+  // Singleton pattern
   static final NotificationService _instance = NotificationService._internal();
-
-  factory NotificationService() {
-    return _instance;
-  }
-
+  factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  // Channel details - Versioned to force update on Android
-  static const String defaultChannelId = 'high_importance_channel_v1';
-  static const String messageChannelId = 'message_channel_v2';
-  static const String callChannelId = 'call_channel_v2';
+  bool _isInitialized = false;
 
-  // Action IDs
-  static const String replyActionId = 'REPLY_ACTION';
-
+  // Initialize everything
   Future<void> initialize() async {
-    await _requestPermission();
-    await _initializeLocalNotifications();
-    await _createNotificationChannels(); // Critical: Create channels before use
-    _configureForegroundOptions();
-    _listenToForegroundMessages();
-    _setupInteractedMessage();
+    if (_isInitialized) return;
+
+    await _requestPermissions();
+    await _initLocalNotifications();
+    await _createNotificationChannels(); // Create channels explicitly
+    await _configureFCM();
+
+    _isInitialized = true;
+    print("DEBUG: NotificationService Initialized");
   }
 
-  Future<void> _requestPermission() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    NotificationSettings settings = await messaging.requestPermission(
+  // Request Permissions (Android 13+ & iOS)
+  Future<void> _requestPermissions() async {
+    // IOS
+    await _firebaseMessaging.requestPermission(
       alert: true,
-      announcement: false,
       badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
       sound: true,
+      provisional: false,
     );
-    print('DEBUG: User granted permission: ${settings.authorizationStatus}');
+
+    // Android 13+ (UpsideDownCake) requires explict permission for local notifications via plugin
+    if (Platform.isAndroid) {
+      final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+          _localNotifications.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+
+      await androidImplementation?.requestNotificationsPermission();
+    }
   }
 
-  Future<void> _initializeLocalNotifications() async {
-    // Android initialization
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+  // Initialize Local Notifications (For Foreground Banners)
+  Future<void> _initLocalNotifications() async {
+    // Use 'launcher_icon' to match the manifest, or 'ic_launcher' if you prefer.
+    // 'launcher_icon' is safer if that's what the manifest uses for default.
+    const AndroidInitializationSettings androidSettings =
+        AndroidInitializationSettings('@mipmap/launcher_icon');
 
-    // iOS initialization
-    const DarwinInitializationSettings initializationSettingsDarwin =
+    final DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+            requestAlertPermission: true,
+            requestBadgePermission: true,
+            requestSoundPermission: true);
 
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
-    );
+    final InitializationSettings settings =
+        InitializationSettings(android: androidSettings, iOS: iosSettings);
 
-    await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
+    await _localNotifications.initialize(
+      settings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        print('DEBUG: Notification clicked with payload: ${response.payload}');
-
-        // Handle Direct Reply Input
-        if (response.actionId == replyActionId && response.input != null) {
-          _handleReply(response.payload, response.input!);
-        }
-
-        _handleNotificationTap(response.payload);
+        print("DEBUG: Local Notification Tapped: ${response.payload}");
+        // TODO: Handle navigation based on payload
       },
-      onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
   }
 
+  // Create Notification Channels (Critical for Android 8+)
   Future<void> _createNotificationChannels() async {
-    final androidImplementation =
-        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+    const AndroidNotificationChannel highImportanceChannel =
+        AndroidNotificationChannel(
+      'high_importance_channel', // id
+      'High Importance Notifications', // title
+      description:
+          'This channel is used for important notifications.', // description
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+    );
+
+    const AndroidNotificationChannel fcmDefaultChannel =
+        AndroidNotificationChannel(
+      'message_channel_v4', // id (Match Manifest)
+      'FCM Notifications', // title
+      description:
+          'Channel for Firebase Cloud Messaging notifications', // description
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+    );
+
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+        _localNotifications.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
 
-    if (androidImplementation == null) return;
-
-    // 1. Default Channel (High Importance, Default Sound)
-    const AndroidNotificationChannel defaultChannel =
-        AndroidNotificationChannel(
-      defaultChannelId,
-      'High Importance Notifications',
-      description: 'Used for important notifications',
-      importance: Importance.max,
-      playSound: true,
-    );
-
-    // 2. Message Channel (Custom Sound if available, else default)
-    const AndroidNotificationChannel messageChannel =
-        AndroidNotificationChannel(
-      messageChannelId,
-      'Message Notifications',
-      description: 'Notifications for new chat messages',
-      importance: Importance.max,
-      playSound: true,
-    );
-
-    // 3. Call Channel (Custom Sound)
-    const AndroidNotificationChannel callChannel = AndroidNotificationChannel(
-      callChannelId,
-      'Call Notifications',
-      description: 'Incoming call notifications',
-      importance: Importance.max,
-      playSound: true,
-    );
-
-    await androidImplementation.createNotificationChannel(defaultChannel);
-    await androidImplementation.createNotificationChannel(messageChannel);
-    await androidImplementation.createNotificationChannel(callChannel);
+    if (androidImplementation != null) {
+      await androidImplementation
+          .createNotificationChannel(highImportanceChannel);
+      await androidImplementation.createNotificationChannel(fcmDefaultChannel);
+      print("DEBUG: Notification Channels Created");
+    }
   }
 
-  void _configureForegroundOptions() async {
-    // This controls how FCM handles the "notification" payload while app is in foreground.
-    // We set these to false so we can MANUALLY show the local notification via flutter_local_notifications
-    // for better control (heads-up display etc).
-    await FirebaseMessaging.instance
-        .setForegroundNotificationPresentationOptions(
-      alert: false,
-      badge: false,
-      sound: false,
-    );
-  }
+  // Configure FCM Listeners
+  Future<void> _configureFCM() async {
+    // Background message handler is set in main.dart
 
-  void _listenToForegroundMessages() {
+    // Foreground Message Handler
+    // We listen here to LOG, but we rely on Socket.IO for the actual banner
+    // to avoid potential duplicates if the server sends both.
+    // OR we can decide to show it if it's a "notification" payload.
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("DEBUG: FOREGROUND MESSAGE RECEIVED: ${message.messageId}");
-      print("DEBUG: FOREGROUND PAYLOAD: ${message.data}");
+      print('DEBUG: FCM Foreground Message: ${message.notification?.title}');
+
+      // If the message contains a notification payload, FCM might NOT show it automatically in foreground.
+      // We can optionally show it here if Socket.IO isn't responsible for this specific message type.
       if (message.notification != null) {
-        print(
-            "DEBUG: FOREGROUND NOTIFICATION: Title=${message.notification!.title}, Body=${message.notification!.body}");
-      }
-
-      String? type = message.data['type'];
-
-      if (type == 'new_call' || type == 'new_live') {
-        // Special handling for Calls (CallKit)
-        handleNotification(message);
-      } else {
-        // For Chat or General Messages
-        RemoteNotification? notification = message.notification;
-
-        // If the payload has a 'notification' object, show a local heads-up notification.
-        // Or if it's a data-only payload that we want to turn into a notification.
-        if (notification != null) {
-          showLocalNotification(message);
-        } else if (message.data.containsKey('title') ||
-            message.data.containsKey('body')) {
-          // Data-only fallback
-          showLocalNotification(message);
-        }
+        // If we want to rely ONLY on Socket.IO for chat, we do nothing here.
+        // But if FCM is the primary delivery for some things, we might need to show it:
+        // showLocalNotification(...)
       }
     });
-  }
 
-  void _handleReply(String? payload, String input) async {
-    print("DEBUG: Direct Reply Input: $input");
-    if (payload != null) {
-      try {
-        Map<String, dynamic> data = jsonDecode(payload);
-        print("DEBUG: Sending reply for payload: $data");
-
-        final prefs = await SharedPreferences.getInstance();
-
-        // 1. Identifier logic for STAFF App
-        String? studentId = data['studentId']?.toString() ??
-            data['senderId']?.toString() ??
-            data['id']?.toString();
-
-        String? teacherId = prefs.getString('breffini_teacher_Id');
-        if (teacherId == null || teacherId == "0") {
-          teacherId = data['teacherId']?.toString();
-        }
-
-        if (studentId == null || teacherId == null) {
-          print(
-              "DEBUG: Error: Missing IDs. Student: $studentId, Teacher: $teacherId");
-          return;
-        }
-
-        String senderName = prefs.getString('First_Name') ?? "Teacher";
-
-        final messageData = {
-          "studentId": studentId,
-          "teacherId": teacherId,
-          "chatMessage": input,
-          "sentTime": DateTime.now().toUtc().toIso8601String(),
-          "isStudent": false,
-          "filePath": "",
-          "fileSize": 0.0,
-          "thumbUrl": "",
-          "senderName": senderName,
-        };
-
-        String path = 'chats/$teacherId/students/$studentId/messages';
-        await FirebaseFirestore.instance.collection(path).add(messageData);
-        print("DEBUG: Reply sent to Firestore at $path");
-      } catch (e) {
-        print("DEBUG: Error handling reply: $e");
-      }
-    }
-  }
-
-  Future<String?> _downloadAndSaveFile(String url, String fileName) async {
-    try {
-      final Directory directory = await getApplicationDocumentsDirectory();
-      final String filePath = '${directory.path}/$fileName';
-      final http.Response response = await http.get(Uri.parse(url));
-      final File file = File(filePath);
-      await file.writeAsBytes(response.bodyBytes);
-      return filePath;
-    } catch (e) {
-      print("DEBUG: Error downloading file: $e");
-      return null;
-    }
-  }
-
-  Future<void> showLocalNotification(RemoteMessage message) async {
-    RemoteNotification? notification = message.notification;
-
-    String title = notification?.title ??
-        message.data['title'] ??
-        message.data['Caller_Name'] ??
-        'New Message';
-    String body = notification?.body ??
-        message.data['body'] ??
-        message.data['message'] ??
-        'You have a new message';
-
-    // Use a hashcode or unique ID
-    int id = message.messageId.hashCode;
-    if (message.data.containsKey('id')) {
-      try {
-        id = int.parse(message.data['id'].toString());
-      } catch (e) {}
-    }
-
-    String type = message.data['type'] ?? '';
-    if (message.data.containsKey('teacherId')) type = 'new_message';
-
-    String channelIdToUse = defaultChannelId;
-    String channelNameToUse = 'High Importance Notifications';
-    AndroidNotificationSound? soundToUse;
-    StyleInformation? styleInformation;
-
-    // Actions List
-    List<AndroidNotificationAction>? actions;
-
-    if (type == 'new_message' || type == 'chat') {
-      channelIdToUse = messageChannelId;
-      channelNameToUse = 'Message Notifications';
-
-      // Use MessagingStyle for chat
-      Person? sender;
-      String? profileUrl = message.data['Profile_Photo_Img'] ??
-          message.data['sender_avatar'] ??
-          message.data['thumbUrl'];
-
-      if (profileUrl != null && profileUrl.isNotEmpty) {
-        final String? largeIconPath = await _downloadAndSaveFile(
-            HttpUrls.imgBaseUrl + profileUrl, 'largeIcon');
-        if (largeIconPath != null) {
-          sender = Person(
-            name: title,
-            key: message.data['senderId']?.toString() ?? "0",
-            icon: BitmapFilePathAndroidIcon(largeIconPath),
-          );
-        }
-      }
-
-      sender ??= Person(
-        name: title,
-        key: message.data['senderId']?.toString() ?? "0",
-      );
-
-      final Message chatMessage = Message(
-        body,
-        DateTime.now(),
-        sender,
-      );
-
-      styleInformation = MessagingStyleInformation(
-        sender,
-        groupConversation: false,
-        messages: [chatMessage],
-      );
-
-      actions = [
-        const AndroidNotificationAction(
-          replyActionId,
-          'Reply',
-          inputs: <AndroidNotificationActionInput>[
-            AndroidNotificationActionInput(
-              label: 'Type a message...',
-            ),
-          ],
-        ),
-      ];
-    } else if (type == 'new_call') {
-      channelIdToUse = callChannelId;
-      channelNameToUse = 'Call Notifications';
-    }
-
-    await flutterLocalNotificationsPlugin.show(
-      id,
-      title,
-      body,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          channelIdToUse,
-          channelNameToUse,
-          channelDescription: 'Notification',
-          importance: Importance.max,
-          priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
-          playSound: true,
-          sound: soundToUse,
-          actions: actions,
-          styleInformation: styleInformation,
-        ),
-        iOS: const DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      ),
-      payload: jsonEncode(message.data),
-    );
-  }
-
-  void _setupInteractedMessage() async {
-    // 1. Terminated State (App opens from notification)
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
-
-    if (initialMessage != null) {
-      _handleNotificationTap(jsonEncode(initialMessage.data));
-    }
-
-    // 2. Background State (App comes to foreground)
+    // Message Open App Handler (When app opened from background notification)
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      _handleNotificationTap(jsonEncode(message.data));
+      print("DEBUG: details FCM Notification Opened: ${message.data}");
+      // TODO: Handle navigation
     });
   }
 
-  void _handleNotificationTap(String? payload) {
-    if (payload != null) {
-      try {
-        Map<String, dynamic> data = jsonDecode(payload);
-        String? type = data['type'];
-        if (type == 'new_message' || type == 'chat') {
-          // Navigate to Chat
-          // Ensure you handle the context correctly, Get.to works if GetMaterialApp is set up
-          Get.to(() => HomePage());
-        }
-        // Add other navigation logic here
-      } catch (e) {
-        print("DEBUG: Error parsing payload: $e");
-      }
-    }
-  }
-
-  Future<void> showNotification({
+  // Public method to show Local Notification (Called by Socket Client)
+  Future<void> showLocalNotification({
     required String title,
     required String body,
-    required String payload,
+    String? payload,
   }) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      messageChannelId,
-      'Message Notifications',
-      channelDescription: 'Notifications for new chat messages',
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: true,
-      actions: [
-        AndroidNotificationAction(
-          replyActionId,
-          'Reply',
-          inputs: <AndroidNotificationActionInput>[
-            AndroidNotificationActionInput(
-              label: 'Type a message...',
-            ),
-          ],
-        ),
-      ],
-    );
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title,
-      body,
-      platformChannelSpecifics,
-      payload: payload,
-    );
+    // print(
+    //     "DEBUG: showLocalNotification called with Title: $title, Body: $body");
+    try {
+      const AndroidNotificationDetails androidDetails =
+          AndroidNotificationDetails(
+        'high_importance_channel', // id
+        'High Importance Notifications', // name
+        channelDescription: 'This channel is used for important notifications.',
+        importance: Importance.max,
+        priority: Priority.high,
+        showWhen: true,
+        enableVibration: true,
+        playSound: true,
+        ticker: 'ticker',
+      );
+
+      const NotificationDetails platformDetails = NotificationDetails(
+          android: androidDetails, iOS: DarwinNotificationDetails());
+
+      // Generate a unique ID based on time
+      int notificationId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+      await _localNotifications.show(
+        notificationId,
+        title,
+        body,
+        platformDetails,
+        payload: payload,
+      );
+      // print(
+      //     "DEBUG: _localNotifications.show executed successfully for ID: $notificationId");
+    } catch (e) {
+      print("DEBUG: Error showing local notification: $e");
+    }
+  }
+
+  // Get FCM Token
+  Future<String?> getFCMToken() async {
+    try {
+      String? token = await _firebaseMessaging.getToken();
+      print("DEBUG: FCM Token: $token");
+      return token;
+    } catch (e) {
+      print("DEBUG: Error getting FCM token: $e");
+      return null;
+    }
   }
 }

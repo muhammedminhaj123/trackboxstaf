@@ -325,53 +325,70 @@ class _CourseDetailsPage1ScreenState extends State<CourseDetailsPage1Screen> {
                                                         vertical: 10),
                                               ),
                                               onPressed: () {
-                                                // if (homeController
-                                                //         .selectedCourseCategory
-                                                //         .value ==
-                                                //     'application/pdf') {
-                                                var pdfurl = (courseContentController
+                                                var content =
+                                                    courseContentController
                                                             .courseContent
                                                             .contents![
-                                                                homeController
-                                                                    .selectedIndex
-                                                                    .value]
-                                                            .exams
+                                                        homeController
+                                                            .selectedIndex
+                                                            .value];
+
+                                                print(
+                                                    "DEBUG: Content Name: ${content.contentName}");
+                                                print(
+                                                    "DEBUG: Content File: ${content.file}");
+                                                print(
+                                                    "DEBUG: Content Type: ${content.fileType}");
+
+                                                var pdfurl = "";
+                                                if (content.exams
                                                             ?.isNotEmpty ==
-                                                        true
-                                                    ? courseContentController
-                                                        .courseContent
-                                                        .contents![
-                                                            homeController
-                                                                .selectedIndex
-                                                                .value]
+                                                        true &&
+                                                    content.exams![0]
+                                                            .supportingDocumentPath !=
+                                                        null &&
+                                                    content
                                                         .exams![0]
-                                                        .supportingDocumentPath
-                                                    : '');
-                                                var audiourl = courseContentController
-                                                            .courseContent
-                                                            .contents![
-                                                                homeController
-                                                                    .selectedIndex
-                                                                    .value]
-                                                            .exams
+                                                        .supportingDocumentPath!
+                                                        .isNotEmpty) {
+                                                  pdfurl = content.exams![0]
+                                                      .supportingDocumentPath!;
+                                                } else if ((content.fileType ==
+                                                            'application/pdf' ||
+                                                        content.fileType
+                                                                ?.contains(
+                                                                    'image') ==
+                                                            true) &&
+                                                    content.file != null) {
+                                                  pdfurl = content.file!;
+                                                }
+
+                                                var audiourl = "";
+                                                if (content.exams
                                                             ?.isNotEmpty ==
-                                                        true
-                                                    ? courseContentController
-                                                        .courseContent
-                                                        .contents![
-                                                            homeController
-                                                                .selectedIndex
-                                                                .value]
+                                                        true &&
+                                                    content.exams![0]
+                                                            .mainQuestion !=
+                                                        null &&
+                                                    content
                                                         .exams![0]
-                                                        .mainQuestion
-                                                    : courseContentController
-                                                            .courseContent
-                                                            .contents![
-                                                                homeController
-                                                                    .selectedIndex
-                                                                    .value]
-                                                            .file ??
-                                                        "";
+                                                        .mainQuestion!
+                                                        .isNotEmpty) {
+                                                  audiourl = content
+                                                      .exams![0].mainQuestion!;
+                                                } else if (content.fileType
+                                                            ?.contains(
+                                                                'audio') ==
+                                                        true &&
+                                                    content.file != null) {
+                                                  audiourl = content.file!;
+                                                }
+
+                                                print(
+                                                    "DEBUG: Calculated pdfurl: '$pdfurl'");
+                                                print(
+                                                    "DEBUG: Calculated audiourl: '$audiourl'");
+
                                                 if (homeController.selectedIndex
                                                             .value <
                                                         0 ||
@@ -381,7 +398,6 @@ class _CourseDetailsPage1ScreenState extends State<CourseDetailsPage1Screen> {
                                                             .courseContent
                                                             .contents!
                                                             .length) {
-                                                  // Show a Snackbar message
                                                   Get.snackbar(
                                                     "Invalid Selection",
                                                     "Please select a valid course",
@@ -389,66 +405,66 @@ class _CourseDetailsPage1ScreenState extends State<CourseDetailsPage1Screen> {
                                                         SnackPosition.BOTTOM,
                                                     backgroundColor: Colors.red,
                                                     colorText: Colors.white,
-                                                    duration:
-                                                        Duration(seconds: 2),
+                                                    duration: const Duration(
+                                                        seconds: 2),
                                                   );
-                                                  return; // Exit the function if the index is invalid
+                                                  return;
                                                 }
+
                                                 if (pdfurl.isEmpty &&
                                                     audiourl.isEmpty) {
+                                                  print(
+                                                      "DEBUG: Both PDF/Image and Audio URLs are empty. Showing snackbar.");
                                                   Get.snackbar(
-                                                    "PDF Not Found",
-                                                    "Sorry, the requested PDF is currently unavailable.",
+                                                    "Content Not Found",
+                                                    "Sorry, the requested content is currently unavailable.",
                                                     snackPosition:
                                                         SnackPosition.BOTTOM,
                                                     duration: const Duration(
                                                         seconds: 2),
                                                   );
                                                 } else {
+                                                  String finalFileUrl = pdfurl
+                                                          .isNotEmpty
+                                                      ? (pdfurl.startsWith(
+                                                              'http')
+                                                          ? pdfurl
+                                                          : '${HttpUrls.imgBaseUrl}$pdfurl')
+                                                      : '';
+                                                  print(
+                                                      "DEBUG: Navigating to PdfViewerPage with fileUrl: '$finalFileUrl'");
                                                   Get.to(
                                                     () => PdfViewerPage(
-                                                      answerKey:
-                                                          '${HttpUrls.imgBaseUrl}${courseContentController.courseContent.contents![homeController.selectedIndex.value].exams![0].answerKeyPath}',
-                                                      answerPdf:
-                                                          courseContentController
-                                                              .courseContent
-                                                              .contents![
-                                                                  homeController
-                                                                      .selectedIndex
-                                                                      .value]
-                                                              .exams![0]
-                                                              .answerKeyPath,
-                                                      media: (courseContentController
-                                                                  .courseContent
-                                                                  .contents![
-                                                                      homeController
-                                                                          .selectedIndex
-                                                                          .value]
-                                                                  .exams
+                                                      answerKey: (content.exams
+                                                                      ?.isNotEmpty ==
+                                                                  true &&
+                                                              content.exams![0]
+                                                                      .answerKeyPath !=
+                                                                  null &&
+                                                              content
+                                                                  .exams![0]
+                                                                  .answerKeyPath
+                                                                  .isNotEmpty)
+                                                          ? (content.exams![0]
+                                                                  .answerKeyPath
+                                                                  .startsWith(
+                                                                      'http')
+                                                              ? content
+                                                                  .exams![0]
+                                                                  .answerKeyPath
+                                                              : '${HttpUrls.imgBaseUrl}${content.exams![0].answerKeyPath}')
+                                                          : null,
+                                                      answerPdf: (content.exams
                                                                   ?.isNotEmpty ==
-                                                              true
-                                                          ? courseContentController
-                                                              .courseContent
-                                                              .contents![
-                                                                  homeController
-                                                                      .selectedIndex
-                                                                      .value]
-                                                              .exams![0]
-                                                              .mainQuestion
-                                                          : courseContentController
-                                                                  .courseContent
-                                                                  .contents![
-                                                                      homeController
-                                                                          .selectedIndex
-                                                                          .value]
-                                                                  .file ??
-                                                              ""),
-                                                      fileUrl:
-                                                          '${HttpUrls.imgBaseUrl}${courseContentController.courseContent.contents![homeController.selectedIndex.value].exams![0].supportingDocumentPath}',
+                                                              true)
+                                                          ? content.exams![0]
+                                                              .answerKeyPath
+                                                          : '',
+                                                      media: audiourl,
+                                                      fileUrl: finalFileUrl,
                                                     ),
                                                   );
                                                 }
-                                                // }
                                               },
                                               child: Text(
                                                 homeController
@@ -456,7 +472,12 @@ class _CourseDetailsPage1ScreenState extends State<CourseDetailsPage1Screen> {
                                                             .value ==
                                                         'application/pdf'
                                                     ? 'Open PDF'
-                                                    : 'Start Your Test',
+                                                    : homeController
+                                                            .selectedCourseCategory
+                                                            .value
+                                                            .contains('image')
+                                                        ? 'View Image'
+                                                        : 'Start Your Test',
                                                 style:
                                                     GoogleFonts.plusJakartaSans(
                                                         fontSize: 14,

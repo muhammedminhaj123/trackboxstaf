@@ -32,4 +32,5 @@ class ColorResources {
   static const Color colorgrey600 = Color(0xFF6A7487);
   static const Color colorgrey700 = Color(0xFF283B52);
   static const Color colorgrey800 = Color(0xFF212A36);
+  static const Color colorgrey900 = Color(0xFF111822);
 }

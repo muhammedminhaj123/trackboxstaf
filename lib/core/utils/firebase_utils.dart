@@ -6,7 +6,6 @@ import 'package:breffini_staff/core/utils/FirebaseCallModel.dart';
 import 'package:breffini_staff/core/utils/common_utils.dart';
 import 'package:breffini_staff/core/utils/extentions.dart';
 import 'package:breffini_staff/core/utils/pref_utils.dart';
-import 'package:breffini_staff/http/notification_service.dart';
 import 'package:breffini_staff/model/current_call_model.dart';
 import 'package:breffini_staff/model/save_call_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -286,21 +285,21 @@ class FirebaseUtils {
                       arrivalTime.difference(sendTime).inSeconds;
 
                   if (delayInSeconds <= 50) {
-                    await showCallkitIncoming(
-                        model.id ?? '',
-                        model.studentName ?? '',
-                        model.profileUrl ?? '',
-                        model.callType ?? '',
-                        model.toJson(),
-                        false);
+                    // await showCallkitIncoming(
+                    //     model.id ?? '',
+                    //     model.studentName ?? '',
+                    //     model.profileUrl ?? '',
+                    //     model.callType ?? '',
+                    //     model.toJson(),
+                    //     false);
                   } else {
-                    await showCallkitIncoming(
-                        model.id ?? '',
-                        model.studentName ?? '',
-                        model.profileUrl ?? '',
-                        model.callType ?? '',
-                        model.toJson(),
-                        true);
+                    // await showCallkitIncoming(
+                    //     model.id ?? '',
+                    //     model.studentName ?? '',
+                    //     model.profileUrl ?? '',
+                    //     model.callType ?? '',
+                    //     model.toJson(),
+                    //     true);
                   }
                 }
               });

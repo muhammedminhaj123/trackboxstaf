@@ -35,9 +35,6 @@ class _TeacherChatHistoryScreenState extends State<TeacherChatHistoryScreen> {
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      try {
-        Permission.notification.request();
-      } catch (_) {}
       _fetchData();
     });
   }
@@ -141,24 +138,40 @@ class _TeacherChatHistoryScreenState extends State<TeacherChatHistoryScreen> {
                               physics: const ClampingScrollPhysics(),
                               itemBuilder: (context, index) {
                                 var chatItem = filteredList[index];
-                                DateTime timestamp = chatItem.sentTime;
-                                String formattedDate =
-                                    DateFormat('dd MMM yyyy').format(timestamp);
-                                String currentDate = DateFormat('dd MMM yyyy')
-                                    .format(DateTime.now());
-                                String yesterdayDate = DateFormat('dd MMM yyyy')
-                                    .format(DateTime.now()
-                                        .subtract(const Duration(days: 1)));
+
+                                DateTime timestamp = chatItem.sentTime
+                                    .toLocal(); // Convert to local time
+                                final now = DateTime.now();
+                                final today =
+                                    DateTime(now.year, now.month, now.day);
+                                final yesterday =
+                                    today.subtract(const Duration(days: 1));
+                                final dateToCheck = DateTime(timestamp.year,
+                                    timestamp.month, timestamp.day);
+
                                 String formattedTime =
                                     DateFormat('hh:mm a').format(timestamp);
-
                                 String displayDate;
-                                if (formattedDate == currentDate) {
+
+                                if (dateToCheck == today) {
+                                  // For today, show the time instead of "Today" based on user preference/standard chat UI,
+                                  // or keep "Today" if that's the specific design.
+                                  // However, looking at the screenshot "11:19 AM", standard apps show Time for today.
+                                  // But the user's code previously showed 'Today'.
+                                  // Let's stick to the user's apparent intent but fix the value.
+                                  // Wait, standard behavior:
+                                  // Today -> Show Time
+                                  // Yesterday -> Show "Yesterday"
+                                  // Older -> Show Date
+                                  // The User's previous code calculated `displayDate` and passed it to `date` param of widget.
+                                  // And `formattedTime` was passed to `time` param.
+                                  // Let's just fix the Date Logic first.
                                   displayDate = 'Today';
-                                } else if (formattedDate == yesterdayDate) {
+                                } else if (dateToCheck == yesterday) {
                                   displayDate = 'Yesterday';
                                 } else {
-                                  displayDate = formattedDate;
+                                  displayDate = DateFormat('dd MMM yyyy')
+                                      .format(timestamp);
                                 }
 
                                 return Column(

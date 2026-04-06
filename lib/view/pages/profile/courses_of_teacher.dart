@@ -78,7 +78,7 @@ class _CoursesOfTeacherScreenState extends State<CoursesOfTeacherScreen> {
                                     ''
                                 ? studentCourseController
                                     .teacherCourseList[index].batchNames
-                                : 'One on one',
+                                : '',
                           ),
                         ),
                       ),

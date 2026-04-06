@@ -9,9 +9,8 @@ import 'package:breffini_staff/core/utils/extentions.dart';
 import 'package:breffini_staff/core/utils/pref_utils.dart';
 import 'package:breffini_staff/http/http_urls.dart';
 import 'package:breffini_staff/view/pages/chats/widgets/loading_circle.dart';
-import 'package:breffini_staff/view/pages/courses/course_module_page.dart';
-import 'package:breffini_staff/view/pages/courses/course_overview_page.dart';
 import 'package:breffini_staff/view/pages/courses/day_category_screen.dart';
+import 'package:breffini_staff/view/pages/courses/widgets/grid_view_day_widget.dart';
 import 'package:breffini_staff/view/pages/courses/widgets/read_more_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
@@ -64,10 +63,19 @@ class _CourseCategoryDetailsScreenState
       (timeStamp) {
         controller.getCourseInfo(courseId: widget.courseId);
         controller.getSectionByCourse(courseId: widget.courseId.toString());
+        // Fetch modules first, then days
+        controller
+            .getCoursesModules(courseId: widget.courseId.toString())
+            .then((_) {
+          if (controller.courseModulesList.isNotEmpty) {
+            enrolController.getBatchWithDays(widget.courseId.toString(),
+                controller.courseModulesList[0].moduleId.toString());
+          }
+        });
       },
     );
 
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 1, vsync: this);
     _tabController.addListener(_handleTabChange);
   }
 
@@ -256,21 +264,21 @@ class _CourseCategoryDetailsScreenState
                             ),
                           ),
                           const SizedBox(height: 8),
-                          controller.courseInfo[0].description != ''
-                              ? Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  child: ReadMoreWidget(
-                                    description:
-                                        controller.courseInfo[0].description,
-                                  ),
-                                )
-                              : const SizedBox(),
-                          controller.courseInfo[0].description != ''
-                              ? const SizedBox(height: 32)
-                              : const SizedBox(
-                                  height: 8,
-                                ),
+                          // controller.courseInfo[0].description != ''
+                          //     ? Padding(
+                          //         padding: const EdgeInsets.symmetric(
+                          //             horizontal: 16),
+                          //         child: ReadMoreWidget(
+                          //           description:
+                          //               controller.courseInfo[0].description,
+                          //         ),
+                          //       )
+                          //     : const SizedBox(),
+                          // controller.courseInfo[0].description != ''
+                          //     ? const SizedBox(height: 32)
+                          //     : const SizedBox(
+                          //         height: 8,
+                          //       ),
                           if (widget.isFromBatch)
                             StreamBuilder(
                                 stream:
@@ -438,7 +446,7 @@ class _CourseCategoryDetailsScreenState
                             height: 8,
                           ),
                           DefaultTabController(
-                            length: 3,
+                            length: 1,
                             child: Column(
                               children: [
                                 TabBar(
@@ -449,23 +457,7 @@ class _CourseCategoryDetailsScreenState
                                   tabs: [
                                     Tab(
                                       child: Text(
-                                        'Modules',
-                                        style: GoogleFonts.plusJakartaSans(
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                    Tab(
-                                      child: Text(
-                                        'Library',
-                                        style: GoogleFonts.plusJakartaSans(
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                    Tab(
-                                      child: Text(
-                                        'Overview',
+                                        'Days',
                                         style: GoogleFonts.plusJakartaSans(
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -478,60 +470,48 @@ class _CourseCategoryDetailsScreenState
                                       ColorResources.colorgrey500,
                                 ),
                                 const SizedBox(height: 10),
-                                Obx(() {
-                                  // double listViewHeight;
-
-                                  // if (tabControllerState.currentIndex.value == 2) {
-                                  //   listViewHeight = Get.height / 2;
-                                  // } else if (tabControllerState.currentIndex.value == 1) {
-                                  //   int itemCount = 6;
-                                  //   listViewHeight = itemCount * 70.0;
-                                  // } else {
-                                  //   int itemCount = controller.courseModulesList.length;
-                                  //   listViewHeight = itemCount * 115.0;
-                                  // }
-
-                                  return SizedBox(
-                                    height: Get.height / 2,
-                                    child: TabBarView(
-                                      controller: _tabController,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16),
-                                          child: CourseModulePage(
-                                            isFromBatch: widget.isFromBatch,
-                                            batchId: widget.batchId,
-                                            badgeIcons: const [
-                                              'assets/images/Bronze.png',
-                                              'assets/images/Silver.png',
-                                              'assets/images/Gold.png',
-                                            ],
-                                            courseId: widget.courseId,
-                                            isLibrary: false,
-                                          ),
-                                        ),
-                                        DayCategoryScreen(
-                                          isTab: true,
-                                          isLibrary: true,
-                                          dayId: '0',
-                                          courseId: widget.courseId.toString(),
-                                          moduleId: '0',
-                                          appBarTitle: '',
-                                          isFromBatch: false,
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16),
-                                          child: CourseOverviewPage(
-                                            description: controller
-                                                .courseInfo[0].thingsToLearn,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }),
+                                SizedBox(
+                                  height: Get.height / 2,
+                                  child: TabBarView(
+                                    controller: _tabController,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: controller.courseModulesList.isEmpty
+                                            ? const Center(
+                                                child: Text('No Days found'),
+                                              )
+                                            : enrolController.isLoading.value
+                                                ? const Center(
+                                                    child: LoadingCircle(),
+                                                  )
+                                                : GridViewDayWidget(
+                                                    batchDays: enrolController
+                                                        .batchDaysList,
+                                                    onDayTapped: (day) {
+                                                      Get.to(() => DayCategoryScreen(
+                                                          isTab: false,
+                                                          isLibrary: false,
+                                                          isFromBatch:
+                                                              widget.isFromBatch,
+                                                          batchId: widget.batchId,
+                                                          dayId:
+                                                              day.daysId.toString(),
+                                                          courseId: widget.courseId
+                                                              .toString(),
+                                                          moduleId: controller
+                                                              .courseModulesList[0]
+                                                              .moduleId
+                                                              .toString(),
+                                                          appBarTitle:
+                                                              '${controller.courseInfo[0].courseName}-${day.dayName}'));
+                                                    },
+                                                  ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                           ),

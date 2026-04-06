@@ -6,7 +6,6 @@ import 'package:breffini_staff/http/http_urls.dart';
 import 'package:breffini_staff/http/loader.dart';
 import 'package:breffini_staff/view/pages/authentication/login_page.dart';
 import 'package:dio/dio.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart' as getx;
@@ -74,8 +73,11 @@ class HttpRequest {
   }
 
   static Future<Response?> httpPostBodyRequest(
-      {Map<String, dynamic>? bodyData, String endPoint = '',bool showLoader=true,bool dismissible=true}) async {
-    if(showLoader) {
+      {Map<String, dynamic>? bodyData,
+      String endPoint = '',
+      bool showLoader = true,
+      bool dismissible = true}) async {
+    if (showLoader) {
       Loader.showLoader(dismissible: dismissible);
     }
     if (kDebugMode) {
@@ -102,13 +104,13 @@ class HttpRequest {
       if (kDebugMode) {
         log('post result ====> ${response.data}  ');
       }
-      if(showLoader) {
+      if (showLoader) {
         Loader.stopLoader();
       }
 
       return response;
     } catch (ex) {
-      if(showLoader) {
+      if (showLoader) {
         Loader.stopLoader();
       }
       if (ex.toString().contains('401')) {
@@ -134,9 +136,13 @@ class HttpRequest {
       return null;
     }
   }
+
   static Future<Response?> httpPostLogin(
-      {Map<String, dynamic>? bodyData, String endPoint = '',bool showLoader=true,bool dismissible=true}) async {
-    if(showLoader) {
+      {Map<String, dynamic>? bodyData,
+      String endPoint = '',
+      bool showLoader = true,
+      bool dismissible = true}) async {
+    if (showLoader) {
       Loader.showLoader(dismissible: dismissible);
     }
     if (kDebugMode) {
@@ -159,13 +165,13 @@ class HttpRequest {
       if (kDebugMode) {
         log('post result ====> ${response.data}  ');
       }
-      if(showLoader) {
+      if (showLoader) {
         Loader.stopLoader();
       }
 
       return response;
     } catch (ex) {
-      if(showLoader) {
+      if (showLoader) {
         Loader.stopLoader();
       }
 

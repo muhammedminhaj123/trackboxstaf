@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:breffini_staff/testpage/answer_review_screen.dart';
+
 import 'package:breffini_staff/testpage/student_test_modal.dart';
 
 class TeacherStudentsListScreen extends StatelessWidget {
@@ -31,15 +31,6 @@ class TeacherStudentsListScreen extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: Text("Score: ${student.score}/${student.total}"),
-              trailing: Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => StudentAnswerReviewScreen(result: student),
-                  ),
-                );
-              },
             ),
           );
         },

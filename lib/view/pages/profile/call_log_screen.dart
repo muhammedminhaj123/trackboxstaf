@@ -60,38 +60,11 @@ class _CallLogScreenState extends State<CallLogScreen> {
                           horizontal: 16,
                         ),
                         child: callHistoryWidget(
-                            callIcon: studentCourseController
-                                        .studentCallsList[index].isStudent ==
-                                    1
-                                ? Material(
-                                    elevation: 1,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(50)),
-                                    color: Colors.white,
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(4.0),
-                                      child: Icon(
-                                        Icons.call_made_rounded,
-                                        color: Colors.green,
-                                      ),
-                                    ))
-                                : Material(
-                                    elevation: 1,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(50)),
-                                    color: Colors.white,
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(4.0),
-                                      child: Icon(
-                                        Icons.call_received_rounded,
-                                        color: Colors.red,
-                                      ),
-                                    )),
-                            color: studentCourseController.studentCallsList[index].isStudent == 1
-                                ? const Color.fromARGB(255, 0, 122, 20)
-                                : const Color.fromARGB(255, 255, 0, 0),
+                            color:
+                                studentCourseController.studentCallsList[index].isStudent ==
+                                        1
+                                    ? const Color.fromARGB(255, 0, 122, 20)
+                                    : const Color.fromARGB(255, 255, 0, 0),
                             time: formatTimeinAmPm(studentCourseController
                                 .studentCallsList[index].callEnd
                                 .toString()),
@@ -104,7 +77,9 @@ class _CallLogScreenState extends State<CallLogScreen> {
                                 .toString(),
                             name: studentCourseController
                                 .studentCallsList[index].studentName,
-                            date: formatOrToday(studentCourseController.studentCallsList[index].messageDate.toString())),
+                            date: formatOrToday(studentCourseController
+                                .studentCallsList[index].messageDate
+                                .toString())),
                       ),
                     ],
                   );

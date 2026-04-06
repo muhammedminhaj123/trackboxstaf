@@ -1,22 +1,19 @@
-import 'package:breffini_staff/controller/calls_page_controller.dart';
-import 'package:breffini_staff/controller/individual_call_controller.dart';
 import 'package:breffini_staff/controller/profile_controller.dart';
 import 'package:breffini_staff/controller/student_course_controller.dart';
 import 'package:breffini_staff/core/theme/color_resources.dart';
-import 'package:breffini_staff/core/utils/common_utils.dart';
+
 import 'package:breffini_staff/core/utils/extentions.dart';
 import 'package:breffini_staff/core/utils/key_center.dart';
-import 'package:breffini_staff/core/utils/pref_utils.dart';
+
 import 'package:breffini_staff/http/chat_socket.dart';
 import 'package:breffini_staff/http/http_urls.dart';
 import 'package:breffini_staff/view/pages/calls/incoming_call_screen.dart';
-import 'package:breffini_staff/view/pages/calls/widgets/google_meet.dart';
-import 'package:breffini_staff/view/pages/calls/widgets/handle_new_call.dart';
+
 import 'package:breffini_staff/view/pages/chats/chat_firebase_screen.dart';
 import 'package:breffini_staff/view/pages/profile/call_log_screen.dart';
 import 'package:breffini_staff/view/pages/profile/course_ongoing_screen.dart';
 import 'package:breffini_staff/view/pages/profile/student_media_screen.dart';
-import 'package:breffini_staff/view/widgets/common_widgets.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -49,10 +46,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
       Get.find<StudentCourseController>();
   final ProfileController profileController =
       Get.find<ProfileController>(); // Added this line
-  final CallandChatController callandChatController =
-      Get.put<CallandChatController>(CallandChatController());
-  final IndividualCallController controller =
-      Get.put(IndividualCallController());
+
   bool isSwitched = false;
 
   @override
@@ -77,7 +71,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 1,
       child: SafeArea(
         child: Scaffold(
           backgroundColor: ColorResources.colorwhite,
@@ -160,191 +154,66 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                 ),
               ),
               SizedBox(
-                height: 4.h,
-              ),
-              Text(
-                widget.contactDetails,
-                style: GoogleFonts.plusJakartaSans(
-                  color: ColorResources.colorgrey500,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              SizedBox(
-                height: 24.h,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  InkWell(
-                    onTap: PrefUtils().getMeetLink().isNotEmpty
-                        ? () async {
-                            await handleCall(
-                              studentId: widget.studentId.toString(),
-                              studentName: widget.studentName,
-                              callId: '',
-                              isVideo: true,
-                              profileImageUrl: widget.profileUrl,
-                              liveLink: PrefUtils().getMeetLink(),
-                              controller: controller,
-                              callandChatController: callandChatController,
-                              safeBack: safeBack,
-                            );
-                            setState(() {});
-
-                            MeetCallTracker(
-                              onCallEnded: () {},
-                            ).startMeetCall(
-                                meetCode: PrefUtils().getMeetLink());
-                          }
-                        : () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Create a google meet link to initiate call')));
-                          },
-                    // onTap: () async {
-                    //   CallandChatController callandChatController =
-                    //       Get.find<CallandChatController>();
-                    //   if(!await isCallExist(context,callandChatController)) {
-
-                    //      Get.to(() => IncomingCallPage(
-                    //           liveLink: "",
-                    //           callId: "",
-                    //           studentId: widget.studentId.toString(),
-                    //           video: true,
-                    //           profileImageUrl: widget.profileUrl,
-                    //           studentName: widget.studentName,
-                    //         ));
-                    //     // Get.to(() => TeacherInitiateCallScreen(
-                    //     //     studentId: int.parse(widget.studentId), video: true));
-                    //     // Get.to(() => CallAcceptingPage());
-                    //   }
-                    // },
-                    child: iconProfileWidget(
-                        bgColor: PrefUtils().getMeetLink().isNotEmpty
-                            ? ColorResources.colorBlue300
-                            : ColorResources.colorgrey400,
-                        iconColor: Colors.white,
-                        svgIcon: 'assets/images/ic_icon_profile_video.svg'),
-                  ),
-                  const SizedBox(
-                    width: 20,
-                  ),
-                  InkWell(
-                    onTap: PrefUtils().getMeetLink().isNotEmpty
-                        ? () async {
-                            await handleCall(
-                              studentId: widget.studentId.toString(),
-                              studentName: widget.studentName,
-                              callId: '',
-                              isVideo: true,
-                              profileImageUrl: widget.profileUrl,
-                              liveLink: PrefUtils().getMeetLink(),
-                              controller: controller,
-                              callandChatController: callandChatController,
-                              safeBack: safeBack,
-                            );
-                            setState(() {});
-
-                            MeetCallTracker(
-                              onCallEnded: () {},
-                            ).startMeetCall(
-                                meetCode: PrefUtils().getMeetLink());
-                          }
-                        : () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Create a google meet link to initiate call')));
-                          },
-                    // onTap: () async {
-                    //   CallandChatController callandChatController =
-                    //       Get.find<CallandChatController>();
-                    //   // Get.to(() => TeacherInitiateCallScreen(
-                    //   //     studentId: int.parse(widget.studentId),
-                    //   //     video: false));
-                    //   if (!await isCallExist(context, callandChatController)) {
-                    //     Get.to(() => IncomingCallPage(
-                    //           liveLink: "",
-                    //           callId: "",
-                    //           studentId: widget.studentId.toString(),
-                    //           video: false,
-                    //           profileImageUrl: widget.profileUrl,
-                    //           studentName: widget.studentName,
-                    //         ));
-                    //   }
-                    // },
-                    child: iconProfileWidget(
-                        bgColor: PrefUtils().getMeetLink().isNotEmpty
-                            ? ColorResources.colorBlue300
-                            : ColorResources.colorgrey400,
-                        iconColor: Colors.white,
-                        svgIcon: 'assets/images/ic_icon_profile_call.svg'),
-                  ),
-                ],
-              ),
-              SizedBox(
                 height: 16.h,
               ),
-              studentCourseController.studentCourseList.isNotEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Container(
-                        height: 48.h,
-                        decoration: BoxDecoration(
-                            color: ColorResources.colorgrey200,
-                            borderRadius: BorderRadius.circular(8.r)),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Exam Batch Status',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: ColorResources.colorgrey600,
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w600,
-                                  )),
-                              Transform.scale(
-                                scale: .60,
-                                child: Switch(
-                                  trackOutlineColor:
-                                      const WidgetStatePropertyAll(
-                                          ColorResources.colorwhite),
-                                  thumbIcon: WidgetStateProperty.all(const Icon(
-                                    Icons.circle,
-                                    color: ColorResources.colorwhite,
-                                  )),
-                                  inactiveThumbColor: ColorResources.colorwhite,
-                                  inactiveTrackColor:
-                                      ColorResources.colorgrey400,
-                                  value: isSwitched,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      isSwitched = value;
-                                      int status = value ? 0 : 1;
+              //  studentCourseController.studentCourseList.isNotEmpty
+              //    ? Padding(
+              //         padding: const EdgeInsets.symmetric(horizontal: 16),
+              //         child: Container(
+              //           height: 48.h,
+              //           decoration: BoxDecoration(
+              //               color: ColorResources.colorgrey200,
+              //               borderRadius: BorderRadius.circular(8.r)),
+              //           child: Padding(
+              //             padding: EdgeInsets.symmetric(horizontal: 16.w),
+              //             child: Row(
+              //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //               children: [
+              //                 Text('Exam Batch Status',
+              //                     style: GoogleFonts.plusJakartaSans(
+              //                       color: ColorResources.colorgrey600,
+              //                       fontSize: 12.sp,
+              //                       fontWeight: FontWeight.w600,
+              //                     )),
+              //                 Transform.scale(
+              //                   scale: .60,
+              //                   child: Switch(
+              //                     trackOutlineColor:
+              //                         const WidgetStatePropertyAll(
+              //                             ColorResources.colorwhite),
+              //                     thumbIcon: WidgetStateProperty.all(const Icon(
+              //                       Icons.circle,
+              //                       color: ColorResources.colorwhite,
+              //                     )),
+              //                     inactiveThumbColor: ColorResources.colorwhite,
+              //                     inactiveTrackColor:
+              //                         ColorResources.colorgrey400,
+              //                     value: isSwitched,
+              //                     onChanged: (value) {
+              //                       setState(() {
+              //                         isSwitched = value;
+              //                         int status = value ? 0 : 1;
 
-                                      profileController
-                                          .changeStudentModuleLockStatus(
-                                              studentId: studentCourseController
-                                                  .studentCourseList[0]
-                                                  .studentId
-                                                  .toString(),
-                                              courseId: studentCourseController
-                                                  .studentCourseList[0].courseId
-                                                  .toString(),
-                                              status: status);
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    )
-                  : const SizedBox(),
+              //                         profileController
+              //                             .changeStudentModuleLockStatus(
+              //                                 studentId: studentCourseController
+              //                                     .studentCourseList[0]
+              //                                     .studentId
+              //                                     .toString(),
+              //                                 courseId: studentCourseController
+              //                                     .studentCourseList[0].courseId
+              //                                     .toString(),
+              //                                 status: status);
+              //                       });
+              //                     },
+              //                   ),
+              //                 ),
+              //               ],
+              //             ),
+              //           ),
+              //         ),
+              //       )
+              //     : const SizedBox(),
               SizedBox(
                 height: 16.h,
               ),
@@ -361,8 +230,6 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                   padding: const EdgeInsets.only(bottom: 12),
                   tabs: const [
                     Tab(text: 'Courses'),
-                    Tab(text: 'Media'),
-                    Tab(text: 'Call History'),
                   ],
                   labelStyle: GoogleFonts.plusJakartaSans(
                     fontSize: 14.sp,
@@ -381,12 +248,6 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                   children: [
                     CourseOngoingScreen(
                       isFromBatch: false,
-                      studentId: widget.studentId,
-                    ),
-                    StudentMediaScreen(
-                      studentId: widget.studentId,
-                    ),
-                    CallLogScreen(
                       studentId: widget.studentId,
                     ),
                   ],

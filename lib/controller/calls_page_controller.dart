@@ -1,37 +1,33 @@
-import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
+import 'dart:async';
 
 // import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:breffini_staff/controller/individual_call_controller.dart';
 import 'package:breffini_staff/controller/live_controller.dart';
-import 'package:breffini_staff/core/utils/FirebaseCallModel.dart';
+
 import 'package:breffini_staff/core/utils/common_utils.dart';
 import 'package:breffini_staff/core/utils/extentions.dart';
 import 'package:breffini_staff/core/utils/firebase_utils.dart';
-import 'package:breffini_staff/core/utils/key_center.dart';
-import 'package:breffini_staff/core/utils/pref_utils.dart';
+
 import 'package:breffini_staff/http/http_requests.dart';
 import 'package:breffini_staff/http/http_urls.dart';
-import 'package:breffini_staff/http/notification_service.dart';
-import 'package:breffini_staff/main.dart';
+
 import 'package:breffini_staff/model/current_call_model.dart';
+import 'package:breffini_staff/model/faculty_batch_student_model.dart';
 import 'package:breffini_staff/model/get_student_timeslot_model.dart';
 import 'package:breffini_staff/model/student_course_model.dart';
 import 'package:breffini_staff/model/student_list_model.dart';
 import 'package:breffini_staff/model/teacher_calls_history_model.dart';
-import 'package:breffini_staff/view/pages/calls/incoming_call_screen.dart';
+
 import 'package:breffini_staff/view/pages/calls/widgets/google_meet.dart';
 import 'package:breffini_staff/view/pages/calls/widgets/handle_new_call.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_callkit_incoming_yoer/entities/call_event.dart';
 import 'package:flutter_callkit_incoming_yoer/flutter_callkit_incoming.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:flutter/scheduler.dart' as scheduler;
+import 'package:get/get.dart';
 
 CallandChatController getCallChatController() {
   try {
@@ -46,12 +42,14 @@ class CallandChatController extends GetxController {
   var getStudentTimeSlotsList = <GetStudentTimeSlotsModel>[].obs;
   var getStudentList = <StudentListModel>[].obs;
   var getStudentCourseList = <StudentListCourseModel>[].obs;
+  var facultyBatchStudentsList = <FacultyBatchStudentModel>[].obs;
   final IndividualCallController controller =
       Get.put(IndividualCallController());
 
   RxString audioCallFormatedTime = "00:00".obs;
   RxBool isOneToOneLoading = false.obs;
   RxBool isStudentListLoading = false.obs;
+  RxBool isFacultyBatchStudentsLoading = false.obs;
 
   // RxInt currentCallId=0.obs;
   // RxString currentCallerName="".obs;
@@ -206,8 +204,8 @@ class CallandChatController extends GetxController {
     audioCallFormatedTime.value =
         '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    showCallNotification(
-        audioCallFormatedTime.value, currentCallModel.value.isVideo ?? false);
+    // showCallNotification(
+    //     audioCallFormatedTime.value, currentCallModel.value.isVideo ?? false);
   }
 
   Future<void> disconnectCall(bool clearNotification, bool isRejectCall,
@@ -243,42 +241,9 @@ class CallandChatController extends GetxController {
     stopTimer();
 
     if (clearNotification) {
-      cancelNotification();
+      // cancelNotification();
       // AwesomeNotifications().cancel(0);
     }
-  }
-
-  void showCallNotification(String timer, bool isVideoCall) async {
-    // Show a notification to the user
-    AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-            'audio_call_channel', isVideoCall ? "Video Call" : 'Audio Call',
-            channelDescription:
-                'Ongoing ' + (isVideoCall ? "video" : "voice") + ' call ',
-            // importance: Importance.max,
-            // priority: Priority.high,
-            autoCancel: false,
-            ongoing: true,
-            silent: true,
-            showWhen: false,
-            category: AndroidNotificationCategory.call,
-            enableVibration: timer == "",
-            chronometerCountDown: false);
-
-    NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin.show(
-        0,
-        'Ongoing ' + (isVideoCall ? "video call " : 'voice call ') + timer,
-        'Tap to return to the call',
-        platformChannelSpecifics,
-        payload: jsonEncode(currentCallModel.value.toMap()));
-  }
-
-  Future<void> cancelNotification() async {
-    await flutterLocalNotificationsPlugin
-        .cancel(0); // Cancel notification with ID 0
   }
 
   // initNotification(String liveLink, String studentId, String callId,
@@ -460,5 +425,63 @@ class CallandChatController extends GetxController {
           break;
       }
     });
+  }
+
+  Future<void> getFacultyBatchStudents(String teacherId) async {
+    try {
+      isFacultyBatchStudentsLoading.value = true;
+      final response = await HttpRequest.httpGetRequest(
+          endPoint: "${HttpUrls.getFacultyBatchStudents}$teacherId",
+          showLoader: false);
+
+      if (response == null) {
+        throw Exception('Response is null');
+      }
+
+      if (response.statusCode == 200) {
+        final rawResponseData = response.data;
+        log("BATCH STUDENTS RAW DATA: $rawResponseData");
+
+        final responseData = rawResponseData is String
+            ? jsonDecode(rawResponseData)
+            : rawResponseData;
+
+        if (responseData is List<dynamic>) {
+          if (responseData.isNotEmpty && responseData[0] is List) {
+            facultyBatchStudentsList.value = (responseData[0] as List)
+                .map((result) => FacultyBatchStudentModel.fromJson(result))
+                .toList();
+          } else {
+            facultyBatchStudentsList.value = responseData
+                .map((result) => FacultyBatchStudentModel.fromJson(result))
+                .toList();
+          }
+          log("MAPPED STUDENTS COUNT: ${facultyBatchStudentsList.length}");
+        } else if (responseData is Map<String, dynamic>) {
+          // Handle case where it might be wrapped in a map
+          if (responseData.containsKey('data') &&
+              responseData['data'] is List) {
+            facultyBatchStudentsList.value = (responseData['data'] as List)
+                .map((result) => FacultyBatchStudentModel.fromJson(result))
+                .toList();
+          } else {
+            facultyBatchStudentsList.value = [
+              FacultyBatchStudentModel.fromJson(responseData)
+            ];
+          }
+          log("MAPPED STUDENTS COUNT (MAP): ${facultyBatchStudentsList.length}");
+        } else {
+          throw Exception(
+              'Unexpected response data type: ${responseData.runtimeType}');
+        }
+      } else {
+        throw Exception('Failed to load students: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error fetching batch students: $error');
+    } finally {
+      isFacultyBatchStudentsLoading.value = false;
+      update();
+    }
   }
 }

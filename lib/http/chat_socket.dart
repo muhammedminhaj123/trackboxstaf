@@ -13,7 +13,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
-import 'package:breffini_staff/http/notification_service.dart';
+
 import 'dart:convert';
 
 class ChatSocket {
@@ -41,7 +41,16 @@ class ChatSocket {
     socket?.connect();
 
     socket?.onConnect((_) {
-      // print('Connect');
+      print('DEBUG: Socket Connected');
+      // Attempt to join user-specific room for notifications
+      SharedPreferences.getInstance().then((prefs) {
+        String teacherId = prefs.getString('breffini_teacher_Id') ?? '';
+        if (teacherId.isNotEmpty) {
+          print('DEBUG: Emitting join for teacher: $teacherId');
+          socket?.emit(
+              'join', teacherId); // Assuming 'join' is the event for user room
+        }
+      });
       emitOngoingCalls();
     });
     // Check connection status after a delay
@@ -107,13 +116,7 @@ class ChatSocket {
               DateTime now = DateTime.now().toUtc();
               // Check if message is within last 2 minutes
               if (now.difference(msgTime).inMinutes.abs() <= 2) {
-                NotificationService().showNotification(
-                  title: '${item['First_Name']} ${item['Last_Name']}',
-                  body: item['message'] ?? 'New message',
-                  payload: jsonEncode(item),
-                );
-                // Break after notifying for the first relevant message to avoid spam
-                // Or remove break if we want stacked notifications (Android handles grouping usually)
+                // Native notification should handle this if FCM is sent alongside socket event
                 break;
               }
             }
@@ -172,13 +175,6 @@ class ChatSocket {
         });
 
         chatLogController.update();
-
-        // Trigger Local Notification
-        NotificationService().showNotification(
-          title: 'New Message',
-          body: data['message'] ?? 'You have a new message',
-          payload: jsonEncode(data),
-        );
       },
     );
 
@@ -191,7 +187,14 @@ class ChatSocket {
 
     socket?.on('connect_error', (data) {});
 
-    socket?.on('error', (data) {});
+    socket?.on('error', (data) {
+      print('DEBUG: Socket Error: $data');
+    });
+
+    // Debug listener for troubleshooting
+    socket?.onAny((event, data) {
+      print('DEBUG: SOCKET EVENT RECEIVED: $event -> $data');
+    });
   }
 
   static joinConversationRoom(

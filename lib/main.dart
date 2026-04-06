@@ -17,6 +17,7 @@ import 'package:breffini_staff/core/utils/pref_utils.dart';
 import 'package:breffini_staff/firebase_options.dart';
 import 'package:breffini_staff/http/chat_socket.dart';
 import 'package:breffini_staff/http/notification_service.dart';
+import 'package:breffini_staff/http/http_urls.dart';
 
 import 'package:breffini_staff/view/pages/authentication/login_page.dart';
 import 'package:breffini_staff/view/pages/courses/widgets/size_utils.dart';
@@ -25,12 +26,10 @@ import 'package:breffini_staff/view/pages/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
@@ -41,7 +40,7 @@ Future<void> main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-
+    // Set background handler BEFORE other firebase execution
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
     await NotificationService().initialize();
   } catch (e) {
@@ -67,6 +66,7 @@ Future<void> main() async {
   }
 
   /// 🔹 Socket init (non-blocking)
+  print("DEBUG: main.dart - BaseURL before socket init: '${HttpUrls.baseUrl}'");
   ChatSocket.initSocket().catchError((e) => print("DEBUG: Socket error: $e"));
 
   runApp(const MyApp());

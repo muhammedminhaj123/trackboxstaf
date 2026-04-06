@@ -230,14 +230,9 @@ Widget callStudentWidget(
     required String image,
     required String startTime,
     required String endTime,
-    IconData? videocam,
     IconData? chatIcon,
-    void Function()? onVideoTap,
     void Function()? avatarTap,
-    void Function()? onAudioTap,
-    void Function()? onChatTap,
-    Color? bgColor,
-    Color? color}) {
+    void Function()? onChatTap}) {
   return Padding(
     padding: EdgeInsets.symmetric(horizontal: 16.w),
     child: Container(
@@ -289,7 +284,7 @@ Widget callStudentWidget(
         ),
 
         subtitle:
-            content.isNotEmpty && startTime.isNotEmpty && endTime.isNotEmpty
+            content.isNotEmpty || (startTime.isNotEmpty && endTime.isNotEmpty)
                 ? Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Column(
@@ -340,30 +335,6 @@ Widget callStudentWidget(
                       bgColor: ColorResources.colorBlue400,
                       iconColor: ColorResources.colorwhite,
                       svgIcon: 'assets/images/ic_icon_profile_chat.svg'),
-                ),
-                SizedBox(
-                  width: 12.h,
-                ),
-                InkWell(
-                  onTap: onVideoTap,
-                  child: iconProfileWidget(
-                      height: 35,
-                      width: 35,
-                      iconColor: color,
-                      bgColor: bgColor,
-                      svgIcon: 'assets/images/ic_icon_profile_video.svg'),
-                ),
-                SizedBox(
-                  width: 12.h,
-                ),
-                InkWell(
-                  onTap: onAudioTap,
-                  child: iconProfileWidget(
-                      bgColor: bgColor,
-                      height: 35,
-                      width: 35,
-                      iconColor: color,
-                      svgIcon: 'assets/images/ic_icon_profile_call.svg'),
                 ),
               ],
             ),

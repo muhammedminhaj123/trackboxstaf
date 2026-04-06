@@ -157,17 +157,6 @@ Widget callHistoryWidget(
       ),
       subtitle: Row(
         children: [
-          callType == "Video"
-              ? const Icon(
-                  Icons.video_call,
-                  color: ColorResources.colorgrey600,
-                  size: 15,
-                )
-              : const Icon(
-                  Icons.call,
-                  color: ColorResources.colorgrey600,
-                  size: 15,
-                ),
           const SizedBox(
             width: 5,
           ),

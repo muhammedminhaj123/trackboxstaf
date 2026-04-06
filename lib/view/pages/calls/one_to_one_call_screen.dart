@@ -2,19 +2,18 @@ import 'dart:developer';
 import 'package:breffini_staff/controller/calls_page_controller.dart';
 import 'package:breffini_staff/controller/individual_call_controller.dart';
 import 'package:breffini_staff/core/theme/color_resources.dart';
-import 'package:breffini_staff/core/utils/common_utils.dart';
+
 import 'package:breffini_staff/core/utils/extentions.dart';
 import 'package:breffini_staff/core/utils/firebase_utils.dart';
 import 'package:breffini_staff/core/utils/key_center.dart';
-import 'package:breffini_staff/core/utils/pref_utils.dart';
+
 import 'package:breffini_staff/http/chat_socket.dart';
 import 'package:breffini_staff/http/http_urls.dart';
 import 'package:breffini_staff/model/current_call_model.dart';
 import 'package:breffini_staff/model/save_call_model.dart';
 import 'package:breffini_staff/view/pages/calls/incoming_call_screen.dart';
 import 'package:breffini_staff/view/pages/calls/teacher_initiate_call_screen.dart';
-import 'package:breffini_staff/view/pages/calls/widgets/google_meet.dart';
-import 'package:breffini_staff/view/pages/calls/widgets/handle_new_call.dart';
+
 import 'package:breffini_staff/view/pages/chats/chat_firebase_screen.dart';
 import 'package:breffini_staff/view/pages/chats/widgets/custom_appbar_widget.dart';
 import 'package:breffini_staff/view/pages/chats/widgets/loading_circle.dart';
@@ -116,7 +115,7 @@ class _OneToOneCallScreenState extends State<OneToOneCallScreen> {
               onChanged: (value) {
                 searchQuery.value = value;
               },
-              title: "One-one",
+              title: "Students",
               controller: searchController.value,
             ),
             body: RefreshIndicator(
@@ -170,290 +169,176 @@ class _OneToOneCallScreenState extends State<OneToOneCallScreen> {
                                                 height: 16.h,
                                               ),
                                               InkWell(
-                                                // onTap: () {
-                                                //   Get.to(() => ProfileViewPage(
-                                                //       courseId:
-                                                //           slot.courseId.toString(),
-                                                //       profileUrl: HttpUrls.imgBaseUrl +
-                                                //           slot.imageUrl,
-                                                //       studentName:
-                                                //           '${slot.firstName} ${slot.lastName}',
-                                                //       contactDetails: slot.courseName,
-                                                //       studentId:
-                                                //           slot.studentId.toString()));
-                                                // },
+                                                onTap: () {
+                                                  Get.to(() => ProfileViewPage(
+                                                      courseId: slot.courseId
+                                                          .toString(),
+                                                      profileUrl:
+                                                          '${HttpUrls.imgBaseUrl}${slot.imageUrl}',
+                                                      studentName:
+                                                          '${slot.firstName} ${slot.lastName}',
+                                                      contactDetails:
+                                                          slot.courseName,
+                                                      studentId: slot.studentId
+                                                          .toString()));
+                                                },
                                                 child: callStudentWidget(
-                                                    chatIcon: Icons
-                                                        .chat_bubble_outline_rounded,
-                                                    onChatTap: () async {
-                                                      final prefs =
-                                                          await SharedPreferences
-                                                              .getInstance();
-                                                      String userTypeId =
-                                                          prefs.getString(
-                                                                  'user_type_id') ??
-                                                              '2';
-                                                      final String teacherId =
-                                                          prefs.getString(
-                                                                  'breffini_teacher_Id') ??
-                                                              "0";
-                                                      // Loader.showLoader();
-                                                      // log('loader showing ?????????');
-                                                      await ChatSocket
-                                                          .joinConversationRoom(
-                                                              slot.studentId
-                                                                  .toString(),
-                                                              int.parse(
-                                                                  teacherId),
-                                                              userTypeId == '2'
-                                                                  ? 'teacher_student'
-                                                                  : 'hod_student');
-                                                      await Get.to(() =>
-                                                          ChatFireBaseScreen(
-                                                            isDeletedUser:
-                                                                false,
-                                                            courseId: userTypeId ==
-                                                                    '2'
-                                                                ? '0'
-                                                                : '${slot.courseId}Hod',
-                                                            userType:
-                                                                userTypeId,
-                                                            contactDetails:
-                                                                slot.courseName,
-                                                            studentName:
-                                                                '${slot.firstName} ${slot.lastName}',
-                                                            studentId: slot
-                                                                .studentId
+                                                  chatIcon: Icons
+                                                      .chat_bubble_outline_rounded,
+                                                  onChatTap: () async {
+                                                    final prefs =
+                                                        await SharedPreferences
+                                                            .getInstance();
+                                                    String userTypeId =
+                                                        prefs.getString(
+                                                                'user_type_id') ??
+                                                            '2';
+                                                    final String teacherId =
+                                                        prefs.getString(
+                                                                'breffini_teacher_Id') ??
+                                                            "0";
+                                                    // Loader.showLoader();
+                                                    // log('loader showing ?????????');
+                                                    await ChatSocket
+                                                        .joinConversationRoom(
+                                                            slot.studentId
                                                                 .toString(),
-                                                            profileUrl:
-                                                                '${HttpUrls.imgBaseUrl}${slot.imageUrl}',
-                                                          ))?.then((value) {
-                                                        // _fetchData();
-                                                      });
-                                                      // Loader.stopLoader();
-                                                    },
-                                                    avatarTap: () {
-                                                      Get.to(() => ProfileViewPage(
-                                                          courseId: slot
-                                                              .courseId
-                                                              .toString(),
-                                                          profileUrl: HttpUrls
-                                                                  .imgBaseUrl +
-                                                              slot.imageUrl,
-                                                          studentName:
-                                                              '${slot.firstName} ${slot.lastName}',
+                                                            int.parse(
+                                                                teacherId),
+                                                            userTypeId == '2'
+                                                                ? 'teacher_student'
+                                                                : 'hod_student');
+                                                    await Get.to(() =>
+                                                        ChatFireBaseScreen(
+                                                          isDeletedUser: false,
+                                                          courseId: userTypeId ==
+                                                                  '2'
+                                                              ? '0'
+                                                              : '${slot.courseId}Hod',
+                                                          userType: userTypeId,
                                                           contactDetails:
                                                               slot.courseName,
+                                                          studentName:
+                                                              '${slot.firstName} ${slot.lastName}',
                                                           studentId: slot
                                                               .studentId
-                                                              .toString()));
-                                                    },
-                                                    videocam:
-                                                        CupertinoIcons.phone,
-                                                    name:
-                                                        "${slot.firstName} ${slot.lastName}",
-                                                    content: slot.courseName,
-                                                    endTime: formatTime(
-                                                        slot.endTime),
-                                                    startTime: formatTime(
-                                                        slot.startTime),
-                                                    image: HttpUrls.imgBaseUrl +
-                                                        slot.imageUrl,
-                                                    onAudioTap: isEnabled
-                                                        ? () async {
-                                                            if (PrefUtils()
-                                                                .getMeetLink()
-                                                                .isEmpty) {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      const SnackBar(
-                                                                          content:
-                                                                              Text('Create a google meet link to initiate call')));
-                                                              return;
-                                                            }
+                                                              .toString(),
+                                                          profileUrl:
+                                                              '${HttpUrls.imgBaseUrl}${slot.imageUrl}',
+                                                        ))?.then((value) {
+                                                      // _fetchData();
+                                                    });
+                                                    // Loader.stopLoader();
+                                                  },
+                                                  avatarTap: () {
+                                                    Get.to(() => ProfileViewPage(
+                                                        courseId: slot.courseId
+                                                            .toString(),
+                                                        profileUrl: HttpUrls
+                                                                .imgBaseUrl +
+                                                            slot.imageUrl,
+                                                        studentName:
+                                                            '${slot.firstName} ${slot.lastName}',
+                                                        contactDetails:
+                                                            slot.courseName,
+                                                        studentId: slot
+                                                            .studentId
+                                                            .toString()));
+                                                  },
 
-                                                            await handleCall(
-                                                              studentId: slot
-                                                                  .studentId
-                                                                  .toString(),
-                                                              studentName: slot
-                                                                  .firstName,
-                                                              callId: '',
-                                                              isVideo: true,
-                                                              profileImageUrl:
-                                                                  slot.imageUrl,
-                                                              liveLink: PrefUtils()
-                                                                  .getMeetLink(),
-                                                              controller:
-                                                                  controller,
-                                                              callandChatController:
-                                                                  callandChatController,
-                                                              safeBack:
-                                                                  safeBack,
-                                                            );
-                                                            setState(() {});
+                                                  name:
+                                                      "${slot.firstName} ${slot.lastName}",
+                                                  content: slot.courseName,
+                                                  endTime:
+                                                      formatTime(slot.endTime),
+                                                  startTime: formatTime(
+                                                      slot.startTime),
+                                                  image: HttpUrls.imgBaseUrl +
+                                                      slot.imageUrl,
 
-                                                            MeetCallTracker(
-                                                              onCallEnded:
-                                                                  () {},
-                                                            ).startMeetCall(
-                                                                meetCode:
-                                                                    PrefUtils()
-                                                                        .getMeetLink());
-                                                          }
-                                                        : () {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
-                                                                    SnackBar(
-                                                                        content:
-                                                                            Text('Calls Allowed Only During Available Hours\n${formatTime(slot.startTime)}-${formatTime(slot.endTime)}')));
-                                                          },
-                                                    // onAudioTap: isEnabled
-                                                    //     ? () async {
-                                                    //         if (!await isCallExist(
-                                                    //             context,
-                                                    //             callandChatController)) {
-                                                    //           Get.to(() =>
-                                                    //               IncomingCallPage(
-                                                    //                 liveLink:
-                                                    //                     "",
-                                                    //                 callId: "",
-                                                    //                 studentId: slot
-                                                    //                     .studentId
-                                                    //                     .toString(),
-                                                    //                 video:
-                                                    //                     false,
-                                                    //                 profileImageUrl:
-                                                    //                     slot.imageUrl,
-                                                    //                 studentName:
-                                                    //                     slot.firstName,
-                                                    //               ));
-                                                    //           //   Get.to(() =>
-                                                    //           //       TeacherInitiateCallScreen(
-                                                    //           //           studentId:
-                                                    //           //               slot.studentId,
-                                                    //           //           video: false));
-                                                    //         }
-                                                    //       }
-                                                    //     : () {
-                                                    //         ScaffoldMessenger
-                                                    //                 .of(context)
-                                                    //             .showSnackBar(
-                                                    //           SnackBar(
-                                                    //             content: Text(
-                                                    //                 "Calls Allowed Only During Available Hours\n${formatTime(slot.startTime)}-${formatTime(slot.endTime)}"),
-                                                    //             duration:
-                                                    //                 const Duration(
-                                                    //                     seconds:
-                                                    //                         2),
-                                                    //           ),
-                                                    //         );
-                                                    //       },
-                                                    onVideoTap: isEnabled
-                                                        ? () async {
-                                                            if (PrefUtils()
-                                                                .getMeetLink()
-                                                                .isEmpty) {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      const SnackBar(
-                                                                          content:
-                                                                              Text('Create a google meet link to initiate call')));
-                                                              return;
-                                                            }
+                                                  // onAudioTap: isEnabled
+                                                  //     ? () async {
+                                                  //         if (!await isCallExist(
+                                                  //             context,
+                                                  //             callandChatController)) {
+                                                  //           Get.to(() =>
+                                                  //               IncomingCallPage(
+                                                  //                 liveLink:
+                                                  //                     "",
+                                                  //                 callId: "",
+                                                  //                 studentId: slot
+                                                  //                     .studentId
+                                                  //                     .toString(),
+                                                  //                 video:
+                                                  //                     false,
+                                                  //                 profileImageUrl:
+                                                  //                     slot.imageUrl,
+                                                  //                 studentName:
+                                                  //                     slot.firstName,
+                                                  //               ));
+                                                  //           //   Get.to(() =>
+                                                  //           //       TeacherInitiateCallScreen(
+                                                  //           //           studentId:
+                                                  //           //               slot.studentId,
+                                                  //           //           video: false));
+                                                  //         }
+                                                  //       }
+                                                  //     : () {
+                                                  //         ScaffoldMessenger
+                                                  //                 .of(context)
+                                                  //             .showSnackBar(
+                                                  //           SnackBar(
+                                                  //             content: Text(
+                                                  //                 "Calls Allowed Only During Available Hours\n${formatTime(slot.startTime)}-${formatTime(slot.endTime)}"),
+                                                  //             duration:
+                                                  //                 const Duration(
+                                                  //                     seconds:
+                                                  //                         2),
+                                                  //           ),
+                                                  //         );
+                                                  //       },
 
-                                                            await handleCall(
-                                                              studentId: slot
-                                                                  .studentId
-                                                                  .toString(),
-                                                              studentName: slot
-                                                                  .firstName,
-                                                              callId: '',
-                                                              isVideo: true,
-                                                              profileImageUrl:
-                                                                  slot.imageUrl,
-                                                              liveLink: PrefUtils()
-                                                                  .getMeetLink(),
-                                                              controller:
-                                                                  controller,
-                                                              callandChatController:
-                                                                  callandChatController,
-                                                              safeBack:
-                                                                  safeBack,
-                                                            );
-                                                            setState(() {});
-
-                                                            MeetCallTracker(
-                                                              onCallEnded:
-                                                                  () {},
-                                                            ).startMeetCall(
-                                                                meetCode:
-                                                                    PrefUtils()
-                                                                        .getMeetLink());
-                                                          }
-                                                        : () {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
-                                                                    SnackBar(
-                                                                        content:
-                                                                            Text('Calls Allowed Only During Available Hours\n${formatTime(slot.startTime)}-${formatTime(slot.endTime)}')));
-                                                          },
-                                                    // onVideoTap: isEnabled
-                                                    //     ? () async {
-                                                    //         if (!await isCallExist(
-                                                    //             context,
-                                                    //             callandChatController)) {
-                                                    //           // Get.to(() =>
-                                                    //           //     TeacherInitiateCallScreen(
-                                                    //           //         studentId:
-                                                    //           //             slot.studentId,
-                                                    //           //         video: true));
-                                                    //           Get.to(() =>
-                                                    //               IncomingCallPage(
-                                                    //                 liveLink:
-                                                    //                     "",
-                                                    //                 callId: "",
-                                                    //                 studentId: slot
-                                                    //                     .studentId
-                                                    //                     .toString(),
-                                                    //                 video: true,
-                                                    //                 profileImageUrl:
-                                                    //                     slot.imageUrl,
-                                                    //                 studentName:
-                                                    //                     slot.firstName,
-                                                    //               ));
-                                                    //         }
-                                                    //       }
-                                                    //     : () {
-                                                    //         ScaffoldMessenger
-                                                    //                 .of(context)
-                                                    //             .showSnackBar(
-                                                    //           SnackBar(
-                                                    //             content: Text(
-                                                    //                 "Calls Allowed Only During Available Hours\n${formatTime(slot.startTime)}-${formatTime(slot.endTime)}"),
-                                                    //             duration:
-                                                    //                 const Duration(
-                                                    //                     seconds:
-                                                    //                         2),
-                                                    //           ),
-                                                    //         );
-                                                    //       },
-                                                    bgColor: isEnabled
-                                                        ? ColorResources
-                                                            .colorBlue400
-                                                        : Colors.grey
-                                                            .withOpacity(.2),
-                                                    color: isEnabled
-                                                        ? Colors.white
-                                                        : ColorResources
-                                                            .colorBlack
-                                                            .withOpacity(.5)),
+                                                  // onVideoTap: isEnabled
+                                                  //     ? () async {
+                                                  //         if (!await isCallExist(
+                                                  //             context,
+                                                  //             callandChatController)) {
+                                                  //           // Get.to(() =>
+                                                  //           //     TeacherInitiateCallScreen(
+                                                  //           //         studentId:
+                                                  //           //             slot.studentId,
+                                                  //           //         video: true));
+                                                  //           Get.to(() =>
+                                                  //               IncomingCallPage(
+                                                  //                 liveLink:
+                                                  //                     "",
+                                                  //                 callId: "",
+                                                  //                 studentId: slot
+                                                  //                     .studentId
+                                                  //                     .toString(),
+                                                  //                 video: true,
+                                                  //                 profileImageUrl:
+                                                  //                     slot.imageUrl,
+                                                  //                 studentName:
+                                                  //                     slot.firstName,
+                                                  //               ));
+                                                  //         }
+                                                  //       }
+                                                  //     : () {
+                                                  //         ScaffoldMessenger
+                                                  //                 .of(context)
+                                                  //             .showSnackBar(
+                                                  //           SnackBar(
+                                                  //             content: Text(
+                                                  //                 "Calls Allowed Only During Available Hours\n${formatTime(slot.startTime)}-${formatTime(slot.endTime)}"),
+                                                  //             duration:
+                                                  //                 const Duration(
+                                                  //                     seconds:
+                                                  //                         2),
+                                                  //           ),
+                                                  //         );
+                                                  //       },
+                                                ),
                                               ),
                                               SizedBox(
                                                 height: 4.h,

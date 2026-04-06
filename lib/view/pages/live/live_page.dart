@@ -597,17 +597,17 @@ Widget _buildViewhierarchy(
             SizedBox(
               width: 6.w,
             ),
-            Text(
-              batchName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: const Color(0xFF6A7487),
-                fontSize: 14.sp,
-                fontFamily: 'Plus Jakarta Sans',
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            // Text(
+            //   batchName,
+            //   maxLines: 1,
+            //   overflow: TextOverflow.ellipsis,
+            //   style: TextStyle(
+            //     color: const Color(0xFF6A7487),
+            //     fontSize: 14.sp,
+            //     fontFamily: 'Plus Jakarta Sans',
+            //     fontWeight: FontWeight.w500,
+            //   ),
+            // ),
           ],
         ),
         SizedBox(

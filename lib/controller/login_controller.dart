@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:breffini_staff/controller/calls_page_controller.dart';
 import 'package:breffini_staff/controller/live_controller.dart';
 import 'package:breffini_staff/controller/ongoing_call_controller.dart';
+import 'package:breffini_staff/controller/profile_controller.dart';
 import 'package:breffini_staff/core/utils/extentions.dart';
 import 'package:breffini_staff/core/utils/firebase_utils.dart';
 import 'package:breffini_staff/core/utils/pref_utils.dart';
@@ -56,21 +57,42 @@ class LoginController extends GetxController {
     }
   }
 
-  Future<void> getFCMToken() async {
+  Future<void> getFCMToken({bool forceRefresh = false}) async {
     // Ensure the function returns a Future and uses async/await
     try {
+      if (forceRefresh) {
+        // Delete the old token first to force a refresh
+        print('DEBUG: Deleting old FCM token...');
+        await FirebaseMessaging.instance.deleteToken();
+
+        // Wait a bit for the deletion to complete
+        await Future.delayed(Duration(milliseconds: 500));
+      }
+
+      // Get a fresh token
       String? token = await FirebaseMessaging.instance.getToken();
-      print('print token $token');
+      print('DEBUG: FCM Token obtained: $token');
       fcmToken = token ?? "";
       log('fmcToken  $fcmToken');
     } catch (e) {
       print('Failed to get FCM token: $e');
+      Get.showSnackbar(GetSnackBar(
+        message: 'FCM Token Error: $e',
+        duration: const Duration(seconds: 5),
+        backgroundColor: Colors.red,
+      ));
     }
   }
 
-  Future<void> teacherLogin(TeacherLoginModel teacher) async {
-    // Wait for the token to be retrieved before proceeding
-    await getFCMToken();
+  Future<void> teacherLogin(TeacherLoginModel teacher,
+      {bool silent = false}) async {
+    // Force refresh the FCM token to ensure we get a new one for this login
+    // This is critical when logging in after a logout to ensure notifications
+    // go to the correct user
+    print('DEBUG: Login started - Force refreshing FCM token...');
+    await getFCMToken(forceRefresh: true);
+    print('DEBUG: New FCM token ready for login');
+
     SharedPreferences preferences = await SharedPreferences.getInstance();
 
     Map<String, dynamic> jsonData = {
@@ -84,6 +106,7 @@ class LoginController extends GetxController {
       var response = await HttpRequest.httpPostLogin(
         bodyData: jsonData,
         endPoint: HttpUrls.login,
+        showLoader: !silent, // Don't show loader if silent
       );
 
       if (response != null) {
@@ -95,42 +118,115 @@ class LoginController extends GetxController {
             'breffini_teacher_Id', response.data['0']['Id'].toString());
         preferences.setString('user_type_id', userTypeId);
 
+        // Save the synced token to avoid re-syncing until it changes again
+        preferences.setString('last_synced_fcm_token', fcmToken);
+
         isLoggedIn.value = true;
 
-        // Redirect based on User_Type_Id
-        if (userTypeId == '2') {
-          Get.offAll(() => const HomePage());
-          print("Successful, redirected to HomePage");
-        } else if (userTypeId == '3') {
-          Get.offAll(() => const HomePage()); // Assuming DemoPage is defined
-          print("Successful, redirected to DemoPage");
+        if (!silent) {
+          // Redirect based on User_Type_Id
+          if (userTypeId == '2') {
+            Get.offAll(() => const HomePage());
+            print("Successful, redirected to HomePage");
+          } else if (userTypeId == '3') {
+            Get.offAll(() => const HomePage()); // Assuming DemoPage is defined
+            print("Successful, redirected to DemoPage");
+          } else {
+            Get.showSnackbar(const GetSnackBar(
+              message: 'Invalid login credentials',
+              duration: Duration(milliseconds: 800),
+            ));
+            print("Not Successful");
+          }
         } else {
-          Get.showSnackbar(const GetSnackBar(
-            message: 'Invalid login credentials',
-            duration: Duration(milliseconds: 800),
-          ));
-          print("Not Successful");
+          print("DEBUG: Silent login successful. Token updated.");
         }
 
         // Clear controllers after successful login
         emailIDController.clear();
         passwordController.clear();
       } else {
-        Get.showSnackbar(const GetSnackBar(
-          message: 'Invalid login credentials',
-          duration: Duration(milliseconds: 800),
-        ));
+        if (!silent) {
+          Get.showSnackbar(const GetSnackBar(
+            message: 'Invalid login credentials',
+            duration: Duration(milliseconds: 800),
+          ));
+        }
         print("Not Successful");
       }
     } catch (e) {
       print('Failed to login: $e');
-      Get.showSnackbar(const GetSnackBar(
-        message: 'An error occurred during login',
-        duration: Duration(milliseconds: 800),
-      ));
+      if (!silent) {
+        Get.showSnackbar(const GetSnackBar(
+          message: 'An error occurred during login',
+          duration: Duration(milliseconds: 800),
+        ));
+      }
     }
 
     update();
+  }
+
+  Future<void> checkAndSyncFCMToken() async {
+    print("DEBUG: Checking if FCM token needs sync...");
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // 1. Get current stored sync token
+    String? lastSyncedToken = prefs.getString('last_synced_fcm_token');
+
+    // 2. Get actual current FCM token from Firebase
+    try {
+      String? currentToken = await FirebaseMessaging.instance.getToken();
+      if (currentToken == null) {
+        print("DEBUG: Failed to get current FCM token. Aborting sync.");
+        return;
+      }
+
+      print(
+          "DEBUG: Last Synced Token: ${lastSyncedToken?.substring(0, 10)}...");
+      print("DEBUG: Current FCM Token: ${currentToken.substring(0, 10)}...");
+
+      // 3. Compare
+      if (lastSyncedToken != currentToken) {
+        print("DEBUG: Token mismatch detected! Initiating silent sync.");
+
+        // 4. Get User Credentials from ProfileController
+        // Note: We expect ProfileController to be initialized and data fetched by HomePage
+        try {
+          // Find ProfileController (it should have been put by HomePage)
+          // We use Get.find because we expect it to be in memory.
+          // If not, we might need to be careful.
+          // Assuming checkAndSyncFCMToken is called AFTER fetchTeacherProfile
+          final profileController = Get.find<ProfileController>();
+
+          if (profileController.getTeacher.isNotEmpty) {
+            var userProfile = profileController.getTeacher[0];
+            String email = userProfile.email;
+            String password =
+                userProfile.password; // Assuming password is available in model
+
+            if (email.isNotEmpty && password.isNotEmpty) {
+              TeacherLoginModel loginModel =
+                  TeacherLoginModel(email: email, password: password);
+
+              // 5. Perform Silent Login
+              await teacherLogin(loginModel, silent: true);
+            } else {
+              print(
+                  "DEBUG: Cannot sync token - Email or Password missing in profile.");
+            }
+          } else {
+            print("DEBUG: Cannot sync token - Profile data not loaded yet.");
+          }
+        } catch (e) {
+          print("DEBUG: Error finding ProfileController or syncing: $e");
+        }
+      } else {
+        print("DEBUG: FCM token is up to date.");
+      }
+    } catch (e) {
+      print("DEBUG: Error getting FCM token for check: $e");
+    }
   }
 
   verifyEmail(String email) async {
@@ -238,6 +334,8 @@ class LoginController extends GetxController {
   }
 
   void logout() async {
+    print('DEBUG: Logout started...');
+
     FirebaseFirestore.instance.clearPersistence();
     FirebaseFirestore.instance.terminate();
     CallandChatController callOngoingController = Get.find();
@@ -262,13 +360,30 @@ class LoginController extends GetxController {
       await FlutterCallkitIncoming.endCall(callId);
     }
 
+    // Unsubscribe from FCM topic
+    print('DEBUG: Unsubscribing from topic: TCR-${PrefUtils().getTeacherId()}');
     FirebaseMessaging.instance
         .unsubscribeFromTopic("TCR-" + PrefUtils().getTeacherId());
 
+    // CRITICAL: Delete the FCM token to prevent notifications going to the wrong user
+    // This ensures that when a new user logs in, they get a fresh token
+    try {
+      print('DEBUG: Deleting FCM token on logout...');
+      await FirebaseMessaging.instance.deleteToken();
+      print('DEBUG: FCM token deleted successfully');
+    } catch (e) {
+      print('DEBUG: Error deleting FCM token: $e');
+    }
+
+    // Clear local storage
     SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.remove('breffini_token');
     await preferences.remove('breffini_teacher_Id');
+    await preferences.remove('user_type_id'); // Also clear user type
+
     isLoggedIn.value = false;
+    print('DEBUG: Logout complete, navigating to login page');
+
     // await Get.delete(force: true);
 
     Get.offAll(() => const LoginPage());

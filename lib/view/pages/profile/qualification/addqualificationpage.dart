@@ -1,5 +1,9 @@
+import 'package:breffini_staff/core/theme/color_resources.dart';
 import 'package:breffini_staff/http/profile_service.dart';
+import 'package:breffini_staff/view/widgets/common_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'qualificationmodal.dart';
 
@@ -134,6 +138,37 @@ class _AddQualificationPageState extends State<AddQualificationPage> {
     }
   }
 
+  InputDecoration _buildInputDecoration(String label, {Widget? suffixIcon}) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: GoogleFonts.plusJakartaSans(
+        color: ColorResources.colorgrey600,
+        fontSize: 12.sp,
+        fontWeight: FontWeight.w400,
+      ),
+      contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
+      fillColor: ColorResources.colorwhite,
+      filled: true,
+      suffixIcon: suffixIcon,
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.w),
+        borderSide: const BorderSide(color: ColorResources.colorBlack),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.w),
+        borderSide: const BorderSide(color: ColorResources.colorgrey300),
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.w),
+        borderSide: const BorderSide(color: ColorResources.colorgrey200),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.w),
+        borderSide: const BorderSide(color: Colors.red),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     degreeController.dispose();
@@ -144,62 +179,116 @@ class _AddQualificationPageState extends State<AddQualificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.qualification == null
-              ? "Add Qualification"
-              : "Edit Qualification",
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: ColorResources.colorgrey200,
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                InkWell(
+                  onTap: () => Navigator.pop(context),
+                  child: CircleAvatar(
+                    backgroundColor: ColorResources.colorBlue100,
+                    radius: 18.r,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 8.0.w),
+                      child: const Icon(
+                        Icons.arrow_back_ios,
+                        color: ColorResources.colorgrey600,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Text(
+                  widget.qualification == null
+                      ? "Add Qualification"
+                      : "Edit Qualification",
+                  style: GoogleFonts.plusJakartaSans(
+                    color: ColorResources.colorgrey700,
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: ColorResources.colorwhite,
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          TextFormField(
+                            controller: degreeController,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: ColorResources.colorBlue800,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: _buildInputDecoration("Degree"),
+                            validator: (v) =>
+                                v == null || v.isEmpty ? "Enter degree" : null,
+                          ),
+                          SizedBox(height: 12.h),
+                          TextFormField(
+                            controller: instituteController,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: ColorResources.colorBlue800,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: _buildInputDecoration("Institute"),
+                            validator: (v) => v == null || v.isEmpty
+                                ? "Enter institute"
+                                : null,
+                          ),
+                          SizedBox(height: 12.h),
+
+                          /// SINGLE CALENDAR FIELD
+                          TextFormField(
+                            controller: yearController,
+                            readOnly: true,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: ColorResources.colorBlue800,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: _buildInputDecoration(
+                              "Passout Date",
+                              suffixIcon: const Icon(Icons.calendar_today,
+                                  color: ColorResources.colorgrey500),
+                            ),
+                            validator: (v) =>
+                                v == null || v.isEmpty ? "Select date" : null,
+                            onTap: _showYearPicker,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: degreeController,
-                decoration: const InputDecoration(labelText: "Degree"),
-                validator: (v) =>
-                    v == null || v.isEmpty ? "Enter degree" : null,
-              ),
-
-              const SizedBox(height: 12),
-
-              TextFormField(
-                controller: instituteController,
-                decoration: const InputDecoration(labelText: "Institute"),
-                validator: (v) =>
-                    v == null || v.isEmpty ? "Enter institute" : null,
-              ),
-
-              const SizedBox(height: 12),
-
-              /// SINGLE CALENDAR FIELD
-              TextFormField(
-                controller: yearController,
-                readOnly: true,
-                decoration: const InputDecoration(
-                  labelText: "Passout Date",
-                  suffixIcon: Icon(Icons.calendar_today),
-                ),
-                validator: (v) => v == null || v.isEmpty ? "Select date" : null,
-                onTap: _showYearPicker,
-              ),
-
-              const Spacer(),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : _saveQualification,
-                  child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Save"),
-                ),
-              ),
-            ],
+        bottomNavigationBar: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: buttonWidget(
+            context: context,
+            text: isLoading ? "Saving..." : "Save",
+            backgroundColor: ColorResources.colorBlue600,
+            txtColor: ColorResources.colorwhite,
+            onPressed: isLoading ? null : _saveQualification,
           ),
         ),
       ),

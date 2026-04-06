@@ -46,6 +46,12 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We need access to the microphone for recording audio for your videos. This helps us provide better services. Please allow access. Thank you!</string>
 

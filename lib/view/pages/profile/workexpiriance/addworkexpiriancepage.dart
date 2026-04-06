@@ -1,5 +1,10 @@
+import 'package:breffini_staff/core/theme/color_resources.dart';
 import 'package:breffini_staff/http/profile_service.dart';
+import 'package:breffini_staff/view/widgets/common_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'workexpiriancemodal.dart';
 
@@ -97,67 +102,151 @@ class _AddWorkExperiencePageState extends State<AddWorkExperiencePage> {
     }
   }
 
+  InputDecoration _buildInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: GoogleFonts.plusJakartaSans(
+        color: ColorResources.colorgrey600,
+        fontSize: 12.sp,
+        fontWeight: FontWeight.w400,
+      ),
+      contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
+      fillColor: ColorResources.colorwhite,
+      filled: true,
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.w),
+        borderSide: const BorderSide(color: ColorResources.colorBlack),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.w),
+        borderSide: const BorderSide(color: ColorResources.colorgrey300),
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.w),
+        borderSide: const BorderSide(color: ColorResources.colorgrey200),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.w),
+        borderSide: const BorderSide(color: Colors.red),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.experience == null
-              ? "Add Work Experience"
-              : "Edit Work Experience",
-        ),
-      ),
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: ColorResources.colorgrey200,
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextFormField(
-                  controller: roleController,
-                  decoration: const InputDecoration(labelText: "Job Role"),
-                  validator: (v) =>
-                      v == null || v.isEmpty ? "Enter job role" : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: companyController,
-                  decoration: const InputDecoration(labelText: "Organization"),
-                  validator: (v) =>
-                      v == null || v.isEmpty ? "Enter organization" : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: yearsController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                    labelText: "Years of Experience (eg: 5.5)",
+                InkWell(
+                  onTap: () => Navigator.pop(context),
+                  child: CircleAvatar(
+                    backgroundColor: ColorResources.colorBlue100,
+                    radius: 18.r,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 8.0.w),
+                      child: const Icon(
+                        Icons.arrow_back_ios,
+                        color: ColorResources.colorgrey600,
+                      ),
+                    ),
                   ),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return "Enter years of experience";
-                    }
-                    if (double.tryParse(v) == null) {
-                      return "Enter valid number";
-                    }
-                    return null;
-                  },
                 ),
-                const Spacer(),
-                SizedBox(
+                SizedBox(height: 16.h),
+                Text(
+                  widget.experience == null
+                      ? "Add Work Experience"
+                      : "Edit Work Experience",
+                  style: GoogleFonts.plusJakartaSans(
+                    color: ColorResources.colorgrey700,
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Container(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: isLoading ? null : _saveWorkExperience,
-                    child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Save"),
+                  decoration: BoxDecoration(
+                    color: ColorResources.colorwhite,
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          TextFormField(
+                            controller: roleController,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: ColorResources.colorBlue800,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: _buildInputDecoration("Job Role"),
+                            validator: (v) => v == null || v.isEmpty
+                                ? "Enter job role"
+                                : null,
+                          ),
+                          SizedBox(height: 12.h),
+                          TextFormField(
+                            controller: companyController,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: ColorResources.colorBlue800,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: _buildInputDecoration("Organization"),
+                            validator: (v) => v == null || v.isEmpty
+                                ? "Enter organization"
+                                : null,
+                          ),
+                          SizedBox(height: 12.h),
+                          TextFormField(
+                            controller: yearsController,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: ColorResources.colorBlue800,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            decoration: _buildInputDecoration(
+                                "Years of Experience (eg: 5.5)"),
+                            validator: (v) {
+                              if (v == null || v.isEmpty) {
+                                return "Enter years of experience";
+                              }
+                              if (double.tryParse(v) == null) {
+                                return "Enter valid number";
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
+          ),
+        ),
+        bottomNavigationBar: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: buttonWidget(
+            context: context,
+            text: isLoading ? "Saving..." : "Save",
+            backgroundColor: ColorResources.colorBlue600,
+            txtColor: ColorResources.colorwhite,
+            onPressed: isLoading ? null : _saveWorkExperience,
           ),
         ),
       ),

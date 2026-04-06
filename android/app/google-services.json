@@ -7,6 +7,78 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:28531733514:android:63f714a221c19a1305dbf3",
+        "android_client_info": {
+          "package_name": "com.trackbox.anandhu_s_application4"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "28531733514-uul9apgvuj6827urgv6k55l2at9da8uo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRP1RbSfNx17ZlbM-_JJyXPrT9_4xH0uM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "28531733514-uul9apgvuj6827urgv6k55l2at9da8uo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "28531733514-1ud1sa7qtpjkgvph3j0dcfobk39svh28.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.trackbox.student"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:28531733514:android:dd00556964ea68a505dbf3",
+        "android_client_info": {
+          "package_name": "com.trackbox.breffini_staff"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "28531733514-uul9apgvuj6827urgv6k55l2at9da8uo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRP1RbSfNx17ZlbM-_JJyXPrT9_4xH0uM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "28531733514-uul9apgvuj6827urgv6k55l2at9da8uo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "28531733514-1ud1sa7qtpjkgvph3j0dcfobk39svh28.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.trackbox.student"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:28531733514:android:0f9d5116f3dbfc3905dbf3",
         "android_client_info": {
           "package_name": "com.trackbox.staff"

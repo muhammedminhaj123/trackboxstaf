@@ -1,55 +1,44 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:breffini_staff/controller/calls_page_controller.dart';
 import 'package:breffini_staff/controller/individual_call_controller.dart';
-import 'package:breffini_staff/controller/ongoing_call_controller.dart';
 import 'package:breffini_staff/controller/profile_controller.dart';
 import 'package:breffini_staff/core/utils/common_utils.dart';
 import 'package:breffini_staff/core/utils/extentions.dart';
-import 'package:breffini_staff/core/utils/file_utils.dart';
 import 'package:breffini_staff/core/utils/firebase_utils.dart';
-import 'package:breffini_staff/core/utils/key_center.dart';
 import 'package:breffini_staff/core/utils/native_utils.dart';
-import 'package:breffini_staff/core/utils/pref_utils.dart';
+
 import 'package:breffini_staff/http/chat_socket.dart';
-import 'package:breffini_staff/http/http_urls.dart';
+
 import 'package:breffini_staff/http/notification_permission_handler.dart';
-import 'package:breffini_staff/http/notification_service.dart';
-import 'package:breffini_staff/main.dart';
-import 'package:breffini_staff/model/current_call_model.dart';
-import 'package:breffini_staff/model/ongoing_call_model.dart';
+
 import 'package:breffini_staff/testpage/exams_page.dart';
-import 'package:breffini_staff/view/pages/calls/incoming_call_screen.dart';
+
 import 'package:breffini_staff/view/pages/calls/widgets/google_meet.dart';
 import 'package:breffini_staff/view/pages/calls/widgets/handle_new_call.dart';
 import 'package:breffini_staff/view/pages/calls/widgets/no_internet_widget.dart';
 import 'package:breffini_staff/view/pages/chats/chat_firebase_screen.dart';
 import 'package:breffini_staff/view/pages/chats/widgets/loading_circle.dart';
 import 'package:breffini_staff/view/pages/courses/course_list_page.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_callkit_incoming_yoer/entities/android_params.dart';
-import 'package:flutter_callkit_incoming_yoer/entities/call_kit_params.dart';
-import 'package:flutter_callkit_incoming_yoer/entities/ios_params.dart';
+
 import 'package:flutter_callkit_incoming_yoer/flutter_callkit_incoming.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:breffini_staff/core/theme/color_resources.dart';
-import 'package:breffini_staff/view/pages/calls/one_to_one_call_screen.dart';
+import 'package:breffini_staff/view/pages/calls/student_batch_list_screen.dart';
 import 'package:breffini_staff/view/pages/chats/student_chat_history_screen.dart';
-import 'package:breffini_staff/view/pages/calls/call_log_screen.dart';
+
 import 'package:breffini_staff/view/pages/live/live_page.dart';
 import 'package:breffini_staff/view/pages/profile/profile_screen.dart';
-import 'package:breffini_staff/testpage/student_list_screen.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:breffini_staff/core/utils/file_utils.dart';
+import 'package:breffini_staff/controller/login_controller.dart';
 // import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
-import 'package:flutter/scheduler.dart' as scheduler;
 
 class HomePage extends StatefulWidget {
   final int initialIndex;
@@ -69,15 +58,10 @@ class _HomePageState extends State<HomePage> {
   final IndividualCallController controller =
       Get.put(IndividualCallController());
 
-  AndroidNotificationChannel? channel;
-
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-
   final List<Widget> _pages = [
     const TeacherChatHistoryScreen(),
     // const CallLogScreen(),
-    const OneToOneCallScreen(),
+    const StudentBatchListScreen(),
     ExamsScreen(),
     const LivePage(),
     const ProfileScreen(),
@@ -94,7 +78,7 @@ class _HomePageState extends State<HomePage> {
       initPermission();
       getInitialData();
       listenCalls();
-      initLocalNotification();
+      // initLocalNotification();
     });
   }
 
@@ -106,11 +90,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  getInitialData() {
+  Future<void> getInitialData() async {
     ChatSocket.emitOngoingCalls(); // used to listen calls when first login...
     FirebaseUtils.listenCalls();
 
-    Get.put(ProfileController()).fetchTeacherProfile(showLoader: false);
+    await Get.put(ProfileController()).fetchTeacherProfile(showLoader: false);
+
+    // Automatically check and sync FCM token if needed
+    Get.put(LoginController()).checkAndSyncFCMToken();
   }
 
   Future<void> _loadUserType() async {
@@ -236,111 +223,6 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: Column(
                       children: [
-                        if (!callandChatController.currentCallModel.value.callId
-                                .isNullOrEmpty() &&
-                            callandChatController.audioCallFormatedTime.value !=
-                                "00:00")
-                          Container(
-                              height: 70.h,
-                              margin: const EdgeInsets.all(5),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  // InkWell(
-                                  //   onTap: () async {
-                                  //     ZegoUIKit().turnMicrophoneOn(!ZegoUIKit()
-                                  //         .getMicrophoneStateNotifier(
-                                  //             ZegoUIKit().getLocalUser().id)
-                                  //         .value);
-                                  //   },
-                                  //   child: Padding(
-                                  //     padding: const EdgeInsets.all(0.0),
-                                  //     child: Card(
-                                  //       shape: RoundedRectangleBorder(
-                                  //           borderRadius:
-                                  //               BorderRadius.circular(50)),
-                                  //       child: Padding(
-                                  //         padding: const EdgeInsets.all(8.0),
-                                  //         child: Icon(
-                                  //           ZegoUIKit()
-                                  //                   .getMicrophoneStateNotifier(
-                                  //                       ZegoUIKit()
-                                  //                           .getLocalUser()
-                                  //                           .id)
-                                  //                   .value
-                                  //               ? Icons.mic
-                                  //               : Icons.mic_off,
-                                  //           color: Colors.red,
-                                  //         ),
-                                  //       ),
-                                  //     ),
-                                  //   ),
-                                  // ),
-                                  InkWell(
-                                    onTap: () {
-                                      // ZegoUIKitPrebuiltCallController()
-                                      //     .minimize
-                                      //     .restore(context);
-                                    },
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.all(8.0),
-                                          child: Icon(
-                                            Icons.call,
-                                            color: Colors.green,
-                                          ),
-                                        ),
-                                        Text(
-                                          "${callandChatController.currentCallModel.value.callerName!}   ${callandChatController.audioCallFormatedTime.value}",
-                                          overflow: TextOverflow.ellipsis,
-                                          style: GoogleFonts.plusJakartaSans(
-                                            color: Colors.green,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  InkWell(
-                                    onTap: () async {
-                                      // await ZegoUIKit().leaveRoom();
-                                      CallandChatController callChatController =
-                                          Get.find();
-                                      callChatController.disconnectCall(
-                                          true,
-                                          false,
-                                          callChatController
-                                              .currentCallModel.value.callerId!,
-                                          callChatController.currentCallModel
-                                                  .value.callId ??
-                                              "");
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(0.0),
-                                      child: Card(
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(50)),
-                                        child: const Padding(
-                                          padding: EdgeInsets.all(8.0),
-                                          child: Icon(
-                                            Icons.call_end,
-                                            color: Colors.red,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              )),
                         Expanded(child: _pages.elementAt(_selectedIndex)),
                       ],
                     ),
@@ -394,7 +276,7 @@ class _HomePageState extends State<HomePage> {
                       : 'assets/images/ic_connect.svg',
                 ),
               ),
-              label: 'One-one',
+              label: 'Students',
             ),
             BottomNavigationBarItem(
               icon: Icon(
@@ -450,109 +332,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> initLocalNotification() async {
-    AndroidNotificationChannel? channel;
-
-    var androidInitializationSettings =
-        const AndroidInitializationSettings('@mipmap/ic_launcher');
-    var iosInitializationSettings = const DarwinInitializationSettings();
-
-    var initializationSetting = InitializationSettings(
-        android: androidInitializationSettings, iOS: iosInitializationSettings);
-
-    await flutterLocalNotificationsPlugin.initialize(initializationSetting,
-        onDidReceiveNotificationResponse: (response) {
-      Map<String, dynamic> payLoad = {};
-      if (!response.payload.isNullOrEmpty()) {
-        payLoad = jsonDecode(response.payload!);
-        handleNotificationClick(payLoad);
-      }
-      // handle interaction when app is active for android
-      // handleMessage(message,context);
-    });
-    FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-
-    if (!kIsWeb) {
-      channel = const AndroidNotificationChannel(
-        'high_importance_channel', // id
-        'High Importance Notifications', // title
-        description:
-            'This channel is used for important notifications.', // description
-        importance: Importance.max,
-      );
-    }
-    if (Platform.isIOS) {
-      await FirebaseMessaging.instance
-          .setForegroundNotificationPresentationOptions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-    }
-
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel!);
-
-    if (!kIsWeb) {
-      firebaseMessaging.subscribeToTopic("TCR-${PrefUtils().getTeacherId()}");
-    }
-
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("");
-      showFlutterNotification(message);
-    });
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      Map<String, dynamic> data = message.data;
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
-      AppleNotification? apple = message.notification?.apple;
-      String imgUrl = "";
-
-      if (notification != null) {
-        if (null != android && !android.imageUrl.isNullOrEmpty()) {
-          imgUrl = android.imageUrl ?? "";
-        }
-        if (null != apple && !apple.imageUrl.isNullOrEmpty()) {
-          imgUrl = apple.imageUrl ?? "";
-        }
-        Map<String, dynamic> newData1 = {
-          'body': notification.body,
-          'title': notification.title,
-          'imageUrl': imgUrl,
-        };
-        data.addAll(newData1);
-        handleNotificationClick(data);
-      }
-    });
-    //This method will call when the app is in kill state
-    FirebaseMessaging.instance.getInitialMessage().then((message) {
-      RemoteNotification? notification = message?.notification;
-      AndroidNotification? android = message?.notification?.android;
-      AppleNotification? apple = message?.notification?.apple;
-      String imgUrl = "";
-
-      if (notification != null) {
-        if (null != android && !android.imageUrl.isNullOrEmpty()) {
-          imgUrl = android.imageUrl ?? "";
-        }
-        if (null != apple && !apple.imageUrl.isNullOrEmpty()) {
-          imgUrl = apple.imageUrl ?? "";
-        }
-        Map<String, dynamic> data = message!.data;
-        Map<String, dynamic> newData1 = {
-          'body': notification.body,
-          'title': notification.title,
-          'imageUrl': imgUrl,
-        };
-        data.addAll(newData1);
-        handleNotificationClick(data);
-      }
-    });
-  }
-
   handleNotificationClick(Map<String, dynamic> payLoad) async {
     String type = payLoad.containsKey("type") ? payLoad['type'] : "";
     if (type == "new_message") {
@@ -599,202 +378,6 @@ class _HomePageState extends State<HomePage> {
       // }
       _selectedIndex = 1;
       setState(() {});
-    }
-  }
-
-  Future<void> showFlutterNotification(RemoteMessage message) async {
-    RemoteNotification? notification = message.notification;
-    AndroidNotification? android = message.notification?.android;
-    AppleNotification? apple = message.notification?.apple;
-    String imgUrl = "";
-    if (message.data.isNotEmpty) {
-      // Convert message.data from Map<String, dynamic> to Map<String, String?>
-      final Map<String, String?> payload =
-          message.data.map((key, value) => MapEntry(key, value.toString()));
-
-      // Determine the channel key based on the payload
-      String channelKey = ""; // Default channel
-
-      if (payload['type'] == 'new_call') {
-        channelKey = 'call_channel'; // Use the call channel
-      } else
-      // if (payload['type'] == 'new_message')
-      {
-        channelKey = 'message_channel'; // Use the message channel
-      }
-      String liveLink = message.data.containsKey("Live_Link")
-          ? message.data['Live_Link']
-          : "";
-      int id = message.data.containsKey("id")
-          ? int.parse(message.data['id'])
-          : message.hashCode;
-      if (payload['type'] != 'new_call') {
-        // showing notification and ring then ringing go behind notification fix
-
-        Map<String, dynamic> data = message.data;
-        Map<String, dynamic> newData1 = {
-          'body': notification?.body,
-          'title': notification?.title,
-          'imageUrl': imgUrl,
-        };
-        data.addAll(newData1);
-
-        flutterLocalNotificationsPlugin
-            .show(
-          payload: jsonEncode(data),
-          notification.hashCode,
-          notification?.title,
-          notification?.body,
-          NotificationDetails(
-            iOS:
-                // filename.isNullOrEmpty()?
-                null,
-            //     :
-            // DarwinNotificationDetails(
-            //   presentAlert: true,
-            //   presentBadge: true,
-            //   presentSound: true,
-            //   attachments: [
-            //     DarwinNotificationAttachment(filename)
-            //   ],
-            // ),
-            android: AndroidNotificationDetails(
-              "high_importance_channel", channelKey,
-              // channelDescription: channel!.description,
-              importance: Importance.max,
-              // priority: Priority.high,
-              fullScreenIntent: false, onlyAlertOnce: true,
-              autoCancel:
-                  true, //cause message always showing when chat msg arrives
-              ongoing: false, silent: false, enableVibration: false,
-              category: AndroidNotificationCategory.message,
-              visibility: NotificationVisibility.public,
-              // styleInformation: styleInformation
-            ),
-          ),
-        )
-            .then((value) {
-          // if(File(filename).existsSync()){
-          //   File(filename).delete();
-          // }
-        });
-      }
-      // if (Get.currentRoute != "/IncomingCallPage") {
-      // hide already started cales
-      // String profileImgUrl = message.data.containsKey("Profile_Photo_Img")
-      //     ? message.data['Profile_Photo_Img']
-      //     : "";
-      // String callId =
-      //     message.data.containsKey("id") ? message.data['id'] : "";
-      // String callerName = message.data.containsKey("Caller_Name")
-      //     ? message.data['Caller_Name']
-      //     : "";
-      // String callType = message.data.containsKey("call_type")
-      //     ? message.data['call_type']
-      //     : "";
-
-      // if(channelKey == "call_channel"){
-      //   //checking notification call id is current call id in server.(to handle delayed notification showing call screen)
-      //   List<OnGoingCallsModel> callList =
-      //   await Get.put(CallOngoingController()).getOngoingCallsApi();
-      //   if(callList.isNotEmpty && callList[0].id.toString()==callId) {
-      //     if (!callId.isNullOrEmpty()) {
-      //
-      //       // to handle duplicate notification
-      //       var calls = await FlutterCallkitIncoming.activeCalls();
-      //       if (calls is List && calls.isNotEmpty && calls.isNotEmpty) {
-      //         if (!calls.any((value) => value["id"].toString() == callId)) {
-      //           showCallkitIncoming(
-      //               callId, callerName, profileImgUrl, callType, message.data);
-      //         }
-      //       } else {
-      //         showCallkitIncoming(
-      //             callId, callerName, profileImgUrl, callType, message.data);
-      //       }
-      //     }
-      //   }else{
-      //     // remove all calls when no current call at server
-      //     await FlutterCallkitIncoming.endAllCalls();
-      //   }
-      //
-      // }else{
-      // if (payload['type'] != 'new_call') {
-      //   // showing notification and ring then ringing go behind notification fix
-      //
-      //   Map<String, dynamic> data = message.data;
-      //   Map<String, dynamic> newData1 = {
-      //     'body': notification?.body,
-      //     'title': notification?.title,
-      //     'imageUrl': imgUrl,
-      //   };
-      //   data.addAll(newData1);
-      //
-      //   flutterLocalNotificationsPlugin
-      //       .show(
-      //     payload: jsonEncode(data),
-      //     notification.hashCode,
-      //     notification?.title,
-      //     notification?.body,
-      //     NotificationDetails(
-      //       iOS:
-      //           // filename.isNullOrEmpty()?
-      //           null,
-      //       //     :
-      //       // DarwinNotificationDetails(
-      //       //   presentAlert: true,
-      //       //   presentBadge: true,
-      //       //   presentSound: true,
-      //       //   attachments: [
-      //       //     DarwinNotificationAttachment(filename)
-      //       //   ],
-      //       // ),
-      //       android: AndroidNotificationDetails(
-      //         "high_importance_channel", channelKey,
-      //         // channelDescription: channel!.description,
-      //         enableLights: true,
-      //         fullScreenIntent: true,
-      //         //      one that already exists in example app.
-      //         // icon: "resource://drawable/res_app_icon",
-      //         // largeIcon:
-      //         //     const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-      //         color: Colors.blueAccent,
-      //         enableVibration: true,
-      //         playSound: true,
-      //         channelShowBadge: true,
-      //         // styleInformation: styleInformation
-      //       ),
-      //     ),
-      //   )
-      //       .then((value) {
-      //     // if(File(filename).existsSync()){
-      //     //   File(filename).delete();
-      //     // }
-      //   });
-      // }
-      // AwesomeNotifications().createNotification(
-      //   actionButtons: channelKey == "call_channel" ? [
-      //     NotificationActionButton(
-      //         key: 'reject_btn', label: 'Reject', color: Colors.red),
-      //     NotificationActionButton(
-      //         key: 'accept_btn', label: 'Accept', color: Colors.green),
-      //   ] : [],
-      //   content: NotificationContent(
-      //     id: id,
-      //     channelKey: channelKey,
-      //     title: message.notification?.title,
-      //     body: message.notification?.body,
-      //     payload: payload,
-      //     largeIcon: HttpUrls.imgBaseUrl + profileImgUrl,
-      //     roundedLargeIcon: true,wakeUpScreen: true,
-      //
-      //   ),
-      // );
-      // }
-      //
-      // if(Get.currentRoute=="/IncomingCallPage" && channelKey == "call_channel" ) {
-      //   // AwesomeNotifications().cancel(id);
-      // }
-      // }
     }
   }
 }

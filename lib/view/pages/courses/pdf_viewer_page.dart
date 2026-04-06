@@ -77,41 +77,67 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
   }
 
   Future<Uint8List?> cachePdf(Function(int, int) onProgress) async {
-    final directory = await getExternalStorageDirectory();
+    print("DEBUG: cachePdf - Attempting to cache URL: '${widget.fileUrl}'");
+
+    if (widget.fileUrl.isEmpty) {
+      print("DEBUG: cachePdf - URL is empty!");
+      return null;
+    }
+
+    final directory =
+        await getApplicationDocumentsDirectory(); // Using app docs dir as it's more reliable
     String fileName = "";
     String filePath = "";
 
-    fileName = Uri.parse(widget.fileUrl).pathSegments.last;
+    try {
+      fileName = Uri.parse(widget.fileUrl).pathSegments.last;
+      print("DEBUG: cachePdf - FileName: $fileName");
+    } catch (e) {
+      print("DEBUG: cachePdf - Error parsing URL segments: $e");
+      fileName = "document_${DateTime.now().millisecondsSinceEpoch}.pdf";
+    }
 
     if (widget.fileUrl.startsWith("http")) {
-      filePath = '${directory?.path}/$fileName';
+      filePath = '${directory.path}/$fileName';
     } else {
       filePath = widget.fileUrl;
     }
 
+    print("DEBUG: cachePdf - Local FilePath: $filePath");
+
     if (File(filePath).existsSync()) {
+      print("DEBUG: cachePdf - File already exists locally.");
       return File(filePath).readAsBytesSync();
     }
 
+    print("DEBUG: cachePdf - File does not exist locally. Downloading...");
     final dio = Dio();
-    final response = await dio.get<List<int>>(
-      (widget.fileUrl),
-      options: Options(
-        responseType: ResponseType.bytes,
-      ),
-      onReceiveProgress: (received, total) {
-        if (total > 0) {
-          onProgress(received, total); // Report progress
-        }
-      },
-    );
+    try {
+      final response = await dio.get<List<int>>(
+        (widget.fileUrl),
+        options: Options(
+          responseType: ResponseType.bytes,
+        ),
+        onReceiveProgress: (received, total) {
+          if (total > 0) {
+            onProgress(received, total); // Report progress
+          }
+        },
+      );
 
-    if (response.statusCode == 200) {
-      File file = File(filePath);
-      await file.writeAsBytes(response.data!);
-      return File(filePath).readAsBytesSync(); // Return the bytes
-    } else {
-      throw Exception('Failed to load PDF: ${response.statusMessage}');
+      if (response.statusCode == 200) {
+        print("DEBUG: cachePdf - Download successful.");
+        File file = File(filePath);
+        await file.writeAsBytes(response.data!);
+        return File(filePath).readAsBytesSync(); // Return the bytes
+      } else {
+        print(
+            "DEBUG: cachePdf - Download failed with status: ${response.statusCode}");
+        throw Exception('Failed to load PDF: ${response.statusMessage}');
+      }
+    } catch (e) {
+      print("DEBUG: cachePdf - Dio error: $e");
+      return null;
     }
   }
 
@@ -211,6 +237,7 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("DEBUG: PdfViewerPage - Building for URL: '${widget.fileUrl}'");
     return Scaffold(
       appBar: (widget.showAppBar)
           ? AppBar(
@@ -268,16 +295,41 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
                 ],
               ),
             );
-            // return Center(
-            //     child: Lottie.asset(
-            //   'assets/lottie/briffni_logo.json',
-            //   width: 70,
-            //   height: 70,
-            // ));
           } else if (snapshot.hasError || snapshot.data == null) {
+            print("DEBUG: PdfViewerPage - Error snapshot: ${snapshot.error}");
             return const Center(child: Text('Error loading PDF'));
           }
 
+          print(
+              "DEBUG: PdfViewerPage - Snapshot data received, length: ${snapshot.data?.length}");
+
+          // Support for viewing images
+          final String url = widget.fileUrl.toLowerCase();
+          final bool isImage = url.endsWith(".png") ||
+              url.endsWith(".jpg") ||
+              url.endsWith(".jpeg") ||
+              url.endsWith(".webp") ||
+              url.endsWith(".gif");
+
+          if (isImage) {
+            print("DEBUG: PdfViewerPage - Displaying as Image.");
+            return InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 5,
+              child: Center(
+                child: Image.memory(
+                  snapshot.data!,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    print("DEBUG: PdfViewerPage - Image memory error: $error");
+                    return const Center(child: Text("Error displaying image"));
+                  },
+                ),
+              ),
+            );
+          }
+
+          print("DEBUG: PdfViewerPage - Displaying as PDF.");
           return InteractiveViewer(
             minScale: 0.5,
             maxScale: 3,
@@ -289,7 +341,7 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
               previewPageMargin: const EdgeInsets.all(0),
               canChangeOrientation: false,
               canChangePageFormat: false,
-              pdfFileName: "report.pdf",
+              pdfFileName: "document.pdf",
               dynamicLayout: false,
               shouldRepaint: false,
               actions: [],
@@ -405,20 +457,26 @@ class _DownloadDialogState extends State<DownloadDialog> {
   }
 
   Future<void> _startDownload(bool showCompleteMsg) async {
+    print("DEBUG: DownloadDialog - Starting download for: ${widget.fileUrl}");
     try {
-      Directory? directory = await getExternalStorageDirectory();
+      Directory? directory = await getApplicationDocumentsDirectory();
 
-      // Fallback to application documents directory if external storage fails
-      // directory ??= await getApplicationDocumentsDirectory();
-      // final directory = await getApplicationDocumentsDirectory();
       final fileName = Uri.parse(widget.fileUrl).pathSegments.last;
-      final filePath = '${directory?.path}/$fileName';
+      final filePath = '${directory.path}/$fileName';
+      print("DEBUG: DownloadDialog - Target Path: $filePath");
 
       File file = File(filePath);
 
       if (!file.existsSync()) {
+        print("DEBUG: DownloadDialog - File does not exist, downloading...");
         final response = await http.Client()
             .send(http.Request('GET', Uri.parse(widget.fileUrl)));
+
+        if (response.statusCode != 200) {
+          print(
+              "DEBUG: DownloadDialog - Download failed with status: ${response.statusCode}");
+          throw Exception("Failed to download file: ${response.statusCode}");
+        }
 
         final contentLength = response.contentLength;
         int bytesReceived = 0;
@@ -427,9 +485,14 @@ class _DownloadDialogState extends State<DownloadDialog> {
           bytesReceived += chunk.length;
           file.writeAsBytesSync(chunk, mode: FileMode.append);
           setState(() {
-            _progress = (bytesReceived / (contentLength ?? bytesReceived));
+            _progress = (contentLength != null && contentLength > 0)
+                ? (bytesReceived / contentLength)
+                : 0.5; // Fallback if content length is unknown
           });
         }
+        print("DEBUG: DownloadDialog - Download complete.");
+      } else {
+        print("DEBUG: DownloadDialog - File already exists.");
       }
 
       if (showCompleteMsg) {

@@ -1,4 +1,4 @@
-package com.trackbox.staff;
+package com.trackbox.breffini_staff;
 
 import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
 

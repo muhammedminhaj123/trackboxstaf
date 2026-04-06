@@ -83,13 +83,12 @@ import 'package:breffini_staff/core/utils/pref_utils.dart';
 import 'package:breffini_staff/http/http_urls.dart';
 import 'package:breffini_staff/model/chat_message_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../http/aws_upload.dart';
+import '../http/cloud_flare_upload.dart';
 
 class ChatFireBaseController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -283,7 +282,8 @@ class ChatFireBaseController extends GetxController {
   // }
   Future<String> uploadFileAndSendMessage(String messageText, String studentId,
       String teacherId, File selectedFile, String thumbUrl) async {
-    String? uploadedFilePath = await AwsUpload.uploadChatImageToAws(
+    String? uploadedFilePath =
+        await CloudFlareUpload.uploadChatImageToCloudFlare(
       selectedFile,
       studentId,
       teacherId,

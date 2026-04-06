@@ -67,8 +67,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '28531733514',
     projectId: 'trackbox-3bbc7',
     storageBucket: 'trackbox-3bbc7.firebasestorage.app',
-    androidClientId: '28531733514-43c0mt1668e6p69e6a7gu3r7ab39f0iu.apps.googleusercontent.com',
-    iosClientId: '28531733514-22gr4nrtagf0uk4lsp363uccq1oitdk2.apps.googleusercontent.com',
+    androidClientId:
+        '28531733514-43c0mt1668e6p69e6a7gu3r7ab39f0iu.apps.googleusercontent.com',
+    iosClientId:
+        '28531733514-22gr4nrtagf0uk4lsp363uccq1oitdk2.apps.googleusercontent.com',
     iosBundleId: 'com.trackbox.staff',
   );
 

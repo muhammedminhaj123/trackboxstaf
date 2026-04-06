@@ -8,7 +8,6 @@ import 'package:breffini_staff/view/pages/chats/widgets/custom_text_form_field.d
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,8 +19,6 @@ Widget buildAppBar({
   required String studentName,
   required String profileUrl,
   required String studentId,
-  void Function()? onVideoTap,
-  void Function()? onAudioTap,
   void Function()? onAvatarTap,
   required String usertype,
 }) {
@@ -129,49 +126,6 @@ Widget buildAppBar({
             ),
           ),
           const Expanded(child: SizedBox()),
-          Row(
-            children: [
-              InkWell(
-                onTap: onAudioTap,
-                child: const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: Icon(
-                    CupertinoIcons.phone,
-                    size: 18,
-                    color: ColorResources.colorgrey700,
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 12.w,
-              ),
-              InkWell(
-                onTap: onVideoTap,
-                child: const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: Icon(
-                    CupertinoIcons.videocam,
-                    size: 24,
-                    color: ColorResources.colorgrey700,
-                  ),
-                ),
-              ),
-              // SizedBox(
-              //   width: 12.w,
-              // ),
-              // const SizedBox(
-              //   width: 24,
-              //   height: 24,
-              //   child: Icon(
-              //     Icons.more_vert,
-              //     size: 18,
-              //     color: ColorResources.colorgrey700,
-              //   ),
-              // ),
-            ],
-          ),
         ],
       ),
     ),
@@ -201,19 +155,120 @@ Widget buildMessageSection({
   required bool isSendingMessage,
 }) {
   return Container(
-    height: height ?? 64.h,
+    height: isVoiceMessage ? null : (height ?? 64.h),
     decoration: const BoxDecoration(color: ColorResources.colorwhite),
     child: Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         // SizedBox(height: 12.h),
         imageWidget,
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!isVoiceMessage)
+        if (isVoiceMessage)
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      formattedTime,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: ColorResources.colorBlack,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (isRecording)
+                              Lottie.asset(
+                                'assets/lottie/record.json',
+                                height: 24.h,
+                                animate: isRecording,
+                              )
+                            else
+                              Text(
+                                "Recording Paused",
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: ColorResources.colorgrey500,
+                                  fontSize: 12.sp,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.looks_one_outlined,
+                      color: ColorResources.colorgrey500,
+                      size: 20,
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    InkWell(
+                      onTap: onStopVoice,
+                      child: const Icon(
+                        Icons.delete_outline,
+                        color: ColorResources.colorgrey500,
+                        size: 24,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: isRecording ? onPause : onResume,
+                      child: Icon(
+                        isRecording
+                            ? Icons.pause_circle_outline
+                            : Icons.play_circle_outline,
+                        color: Colors.redAccent,
+                        size: 32,
+                      ),
+                    ),
+                    isSendingMessage
+                        ? SizedBox(
+                            height: 32.h,
+                            width: 32.h,
+                            child: const CircularProgressIndicator(
+                              color: ColorResources.colorBlue600,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : InkWell(
+                            onTap: onTap,
+                            child: Container(
+                              height: 36.h,
+                              width: 36.h,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF1B1B1B),
+                              ),
+                              child: const Icon(
+                                Icons.send,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                  ],
+                ),
+              ],
+            ),
+          )
+        else
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 InkWell(
                   onTap: () {
                     showModalBottomSheet(
@@ -287,8 +342,7 @@ Widget buildMessageSection({
                     child: const Icon(CupertinoIcons.add),
                   ),
                 ),
-              if (!isVoiceMessage) SizedBox(width: 10.h),
-              if (!isVoiceMessage)
+                SizedBox(width: 10.h),
                 Expanded(
                   child: CustomTextFormField(
                     fillColor: ColorResources.colorgrey200,
@@ -306,173 +360,68 @@ Widget buildMessageSection({
                     textInputAction: TextInputAction.done,
                     alignment: Alignment.center,
                   ),
-                )
-              else
-                InkWell(
-                  onTap: isRecording ? onPause : onResume,
-                  child: CustomIconButton(
-                    height: 38.h,
-                    width: 38.h,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFFF4F7FA),
-                          Color(0xFFF4F7FA),
-                        ],
-                      ),
-                    ),
-                    child: Icon(
-                      isRecording ? Icons.pause : Icons.play_arrow,
-                      color: const Color(0xFF283B52),
-                      size: 20,
-                    ),
-                  ),
                 ),
-              SizedBox(width: 10.h),
-              if (isVoiceMessage)
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(
-                          0xFFE3E7EE), // Set the background color (optional)
-                      borderRadius:
-                          BorderRadius.circular(12.0), // Set the border radius
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Row(
-                        children: [
-                          if (isRecording)
-                            Lottie.asset('assets/lottie/record.json',
-                                animate: isRecording),
-                          const SizedBox(
-                            width: 10,
-                          ),
-                          Expanded(
-                              child: Row(
-                            children: [
-                              (isRecording)
-                                  ? Text(
-                                      'Recording...',
-                                      style:
-                                          TextStyle(color: Color(0xFF6A7487)),
-                                    )
-                                  : (isRecordingPaused)
-                                      ? Text(
-                                          'Paused...',
-                                          style: TextStyle(
-                                              color: Color(0xFF6A7487)),
-                                        )
-                                          .animate(
-                                            onPlay: (controller) =>
-                                                controller.repeat(),
-                                          )
-                                          .fadeIn(
-                                              duration: 600.ms,
-                                              delay: 200.ms) // Fade in
-                                          .scale(
-                                              delay: 200.ms,
-                                              curve: Curves
-                                                  .easeOut) // Scale after a delay
-                                          .then() // Then
-                                          .fadeOut(duration: 600.ms)
-                                      : Text(""), // Fade out
-                            ],
-                          )),
-                          Text(formattedTime),
-                          const SizedBox(
-                            width: 10,
-                          ),
-                          InkWell(
-                            onTap: onStopVoice,
-                            child: CustomIconButton(
-                              height: 25.h,
-                              width: 25.h,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(50),
-                                  color: const Color(0xFF283B52)),
-                              child: const Icon(
-                                Icons.close,
-                                color: Color(0xFFE3E7EE),
-                                size: 15,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              SizedBox(width: 10),
-              isSendingMessage
-                  ? Container(
-                      height: 38.h,
-                      width: 38.h,
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                      child: CircularProgressIndicator(color: ColorResources.colorBlue600,),
-                    )
-                  :
-                  // Send button
-                  (!isMessageTyped &&
-                          !isRecording &&
-                          !isRecordingPaused &&
-                          fileName.isNullOrEmpty())
-                      ? InkWell(
-                          onTap: onTap,
-                          child: CustomIconButton(
-                            height: 38.h,
-                            width: 38.h,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(14),
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  ColorResources.colorBlue600,
-                                  ColorResources.colorBlue600,
-                                ],
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.mic,
-                              color: ColorResources.colorwhite,
-                              size: 18,
-                            ),
-                          ),
-                        )
-                      : InkWell(
-                          onTap: onTap,
-                          child: CustomIconButton(
-                            height: 38.h,
-                            width: 38.h,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(14),
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  ColorResources.colorBlue600,
-                                  ColorResources.colorBlue600
-                                ],
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.send,
-                              color: ColorResources.colorwhite,
-                              size: 18,
-                            ),
-                          ),
+                SizedBox(width: 10),
+                isSendingMessage
+                    ? Container(
+                        height: 38.h,
+                        width: 38.h,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        child: CircularProgressIndicator(
+                          color: ColorResources.colorBlue600,
                         ),
-              SizedBox(height: 12.h),
-            ],
+                      )
+                    : (isMicOn && fileName.isEmpty && !isMessageTyped)
+                        ? InkWell(
+                            onTap: onTap,
+                            child: CustomIconButton(
+                              height: 38.h,
+                              width: 38.h,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    ColorResources.colorBlue600,
+                                    ColorResources.colorBlue600,
+                                  ],
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.mic,
+                                color: ColorResources.colorwhite,
+                                size: 18,
+                              ),
+                            ),
+                          )
+                        : InkWell(
+                            onTap: onTap,
+                            child: CustomIconButton(
+                              height: 38.h,
+                              width: 38.h,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    ColorResources.colorBlue600,
+                                    ColorResources.colorBlue600
+                                  ],
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.send,
+                                color: ColorResources.colorwhite,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+              ],
+            ),
           ),
-        ),
       ],
     ),
   );

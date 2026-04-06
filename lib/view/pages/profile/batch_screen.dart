@@ -120,47 +120,37 @@ class _BatchScreenState extends State<BatchScreen> {
                                   profileController.getBatchesOfTeacher.length,
                               itemBuilder: (context, index) {
                                 return batchOfTeacherWidget(
-                                    badgeColor: (profileController.getBatchesOfTeacher[index].hasBatch == 1 &&
-                                            profileController.getBatchesOfTeacher[index].hasOneOnOne ==
-                                                1)
-                                        ? const Color.fromARGB(
-                                            255, 128, 128, 128)
-                                        : (profileController.getBatchesOfTeacher[index].hasBatch == 0 &&
-                                                profileController.getBatchesOfTeacher[index].hasOneOnOne ==
-                                                    1)
-                                            ? const Color.fromARGB(
-                                                255, 0, 133, 60)
-                                            : (profileController.getBatchesOfTeacher[index].hasBatch == 1 &&
-                                                    profileController.getBatchesOfTeacher[index].hasOneOnOne ==
-                                                        0)
-                                                ? const Color.fromARGB(
-                                                    255, 255, 38, 38)
-                                                : Colors.transparent,
-                                    badgeText: (profileController.getBatchesOfTeacher[index].hasBatch == 1 &&
-                                            profileController
-                                                    .getBatchesOfTeacher[index]
-                                                    .hasOneOnOne ==
-                                                1)
-                                        ? 'Live and One-one'
-                                        : (profileController.getBatchesOfTeacher[index].hasBatch == 0 &&
-                                                profileController.getBatchesOfTeacher[index].hasOneOnOne ==
-                                                    1)
-                                            ? 'One-one'
-                                            : (profileController.getBatchesOfTeacher[index].hasBatch == 1 &&
-                                                    profileController.getBatchesOfTeacher[index].hasOneOnOne == 0)
-                                                ? 'Live'
-                                                : '',
-                                    icon: profileController.getBatchesOfTeacher[index].batchIDs != null ? Icons.group : Icons.person,
+                                    badgeColor: Colors
+                                        .transparent, // Hidden as requested
+                                    badgeText: '', // Hidden as requested
+                                    icon: profileController.getBatchesOfTeacher[index].batchIDs != null
+                                        ? Icons.group
+                                        : Icons.person,
                                     iconColor: ColorResources.colorwhite,
                                     txtColor: ColorResources.colorwhite,
-                                    color: profileController.getBatchesOfTeacher[index].batchIDs != null ? ColorResources.colorgrey600 : const Color.fromARGB(255, 0, 133, 60),
+                                    color: profileController
+                                                .getBatchesOfTeacher[index]
+                                                .batchIDs !=
+                                            null
+                                        ? ColorResources.colorgrey600
+                                        : const Color.fromARGB(255, 0, 133, 60),
                                     timeSlot: 'Time slots :',
-                                    batchNames: profileController.getBatchesOfTeacher[index].courseName,
+                                    batchNames: profileController
+                                        .getBatchesOfTeacher[index].courseName,
                                     context: context,
-                                    batchStart: formatDate(profileController.getBatchesOfTeacher[index].batchStart),
-                                    batchEnd: formatDate(profileController.getBatchesOfTeacher[index].batchEnd),
-                                    studentsName: profileController.getBatchesOfTeacher[index].batchIDs != null ? 'Batch : ${profileController.getBatchesOfTeacher[index].batchNames}' : 'No Batch assigned',
-                                    studentCount: profileController.getBatchesOfTeacher[index].timeSlots.toString());
+                                    batchStart: formatDate(profileController
+                                        .getBatchesOfTeacher[index].batchStart),
+                                    batchEnd: formatDate(profileController
+                                        .getBatchesOfTeacher[index].batchEnd),
+                                    studentsName: profileController
+                                                .getBatchesOfTeacher[index]
+                                                .batchIDs !=
+                                            null
+                                        ? 'Batch : ${profileController.getBatchesOfTeacher[index].batchNames}'
+                                        : 'No Batch assigned',
+                                    studentCount: profileController
+                                        .getBatchesOfTeacher[index].timeSlots
+                                        .toString());
                               },
                             )
                           ],

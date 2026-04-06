@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:breffini_staff/controller/profile_controller.dart';
 import 'package:breffini_staff/core/theme/color_resources.dart';
 import 'package:breffini_staff/core/utils/image_constants.dart';
-import 'package:breffini_staff/http/aws_upload.dart';
+import 'package:breffini_staff/http/cloud_flare_upload.dart';
 import 'package:breffini_staff/http/http_urls.dart';
 import 'package:breffini_staff/http/loader.dart';
 import 'package:breffini_staff/model/teacher_profile_model.dart';
@@ -173,13 +173,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             controller: pController.passwordController,
                             labelText: 'Password',
                             onChanged: (value) {}),
-                        SizedBox(
+                        /*SizedBox(
                           height: 6.h,
                         ),
                         commonTextFieldWidget(
                             controller: pController.gMeetController,
                             labelText: 'Google meet link',
-                            onChanged: (value) {}),
+                            onChanged: (value) {}),*/
                       ],
                     ),
                   ),
@@ -199,7 +199,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Loader.showLoader();
                 String imagePath = '';
                 if (image != null) {
-                  var img = await AwsUpload.uploadToAws(image!) ?? '';
+                  var img =
+                      await CloudFlareUpload.uploadToCloudFlare(image!) ?? '';
                   if (img != '') {
                     imagePath = Uri.parse(img).path.replaceFirst('/', '');
                   }
@@ -222,6 +223,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ? imagePath
                       : pController.getTeacher[0].profilePhotoPath,
                   profilePhotoName: pController.getTeacher[0].profilePhotoName,
+                  registeredDate: pController.getTeacher[0].registeredDate,
                 );
                 await pController.saveEditedProfile(teacherProfile, context);
 
@@ -231,6 +233,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
     );
   }
+
   Widget profileImageStackWidget(BuildContext context) {
     return Stack(
       children: [
@@ -258,7 +261,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 : profileController.getTeacher[0].profilePhotoPath.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl:
-                            '${HttpUrls.imgBaseUrl}${pController.getTeacher[0].profilePhotoPath}',
+                            '${HttpUrls.imgBaseUrl}${pController.getTeacher[0].profilePhotoPath}?t=${DateTime.now().millisecondsSinceEpoch}',
                         fit: BoxFit.cover,
                         errorWidget: (context, url, error) => const Center(
                           child: Icon(

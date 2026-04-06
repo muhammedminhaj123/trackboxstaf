@@ -413,24 +413,47 @@ class _CourseCurriculamWidgetState extends State<CourseCurriculamWidget> {
   }
 
   String getTitle(MapEntry<int, Content> v) {
-    print("type ---+ " + v.value.fileType.toString() ??
-        v.value.exams![0].fileType.toString());
-    String s = v.value.fileType ?? v.value.exams![0].fileType;
-    return s.contains('audio')
-        ? 'Audio'
-        : s == 'video/mp4'
-            ? 'Video'
-            : 'PDF';
+    String? fileType = v.value.fileType;
+    if (fileType == null &&
+        v.value.exams != null &&
+        v.value.exams!.isNotEmpty) {
+      fileType = v.value.exams![0].fileType;
+    }
+
+    print("DEBUG: getTitle - Content: ${v.value.contentName}, Type: $fileType");
+
+    String s = fileType ?? "";
+    if (s.contains('audio')) return 'Audio';
+    if (s == 'video/mp4') return 'Video';
+    if (s.contains('image')) return 'Image';
+    return 'PDF';
   }
 
   onTapCourseCard(MapEntry<int, Content> v) {
+    print("DEBUG: onTapCourseCard - Content: ${v.value.contentName}");
     widget.controllerCourseDetailsController.selectedIndex.value = v.key;
     widget.controllerCourseDetailsController.setTitle(v.value.contentName);
-    widget.controllerCourseDetailsController.getSelectedCourseCategory(
-        v.value.fileType ?? v.value.exams![0].fileType);
-    widget.controllerCourseDetailsController.videoURL =
-        '${HttpUrls.imgBaseUrl}${v.value.file}';
-    widget.toggleVideo('${HttpUrls.imgBaseUrl}${v.value.file}');
+
+    String? fileType = v.value.fileType;
+    if (fileType == null &&
+        v.value.exams != null &&
+        v.value.exams!.isNotEmpty) {
+      fileType = v.value.exams![0].fileType;
+    }
+
+    print("DEBUG: onTapCourseCard - Setting category: $fileType");
+    widget.controllerCourseDetailsController
+        .getSelectedCourseCategory(fileType ?? "");
+
+    String fileUrl = '${HttpUrls.imgBaseUrl}${v.value.file}';
+    widget.controllerCourseDetailsController.videoURL = fileUrl;
+
+    if (fileType != 'application/pdf') {
+      print("DEBUG: onTapCourseCard - Toggling video for: $fileUrl");
+      widget.toggleVideo(fileUrl);
+    } else {
+      print("DEBUG: onTapCourseCard - Item is PDF, skipping video toggle.");
+    }
 
     widget.scrollController.animateTo(0,
         curve: Curves.fastEaseInToSlowEaseOut,
