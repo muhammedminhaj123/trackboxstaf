@@ -41,6 +41,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     pController.phoneController.text = pController.getTeacher[0].phoneNumber;
     pController.gMeetController.text =
         pController.getTeacher[0].gMeetLink ?? '';
+    pController.addressController.text = pController.getTeacher[0].address ?? '';
 
     _loadUserTypeId();
     super.initState();
@@ -173,6 +174,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             controller: pController.passwordController,
                             labelText: 'Password',
                             onChanged: (value) {}),
+                        commonTextFieldWidget(
+                            controller: pController.addressController,
+                            labelText: 'Address',
+                            onChanged: (value) {}),
                         /*SizedBox(
                           height: 6.h,
                         ),
@@ -224,6 +229,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       : pController.getTeacher[0].profilePhotoPath,
                   profilePhotoName: pController.getTeacher[0].profilePhotoName,
                   registeredDate: pController.getTeacher[0].registeredDate,
+                  address: pController.addressController.text.trim(),
                 );
                 await pController.saveEditedProfile(teacherProfile, context);
 
