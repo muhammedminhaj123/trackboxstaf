@@ -224,6 +224,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   color: ColorResources.colorgrey600,
                                 ),
                               ),
+                              if (profileController.getTeacher[0].address != null &&
+                                  profileController
+                                      .getTeacher[0].address!.isNotEmpty)
+                                Padding(
+                                  padding: EdgeInsets.only(top: 4.h),
+                                  child: Text(
+                                    profileController.getTeacher[0].address!,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 12.sp,
+                                      color: ColorResources.colorgrey600,
+                                    ),
+                                  ),
+                                ),
                               SizedBox(height: 8.h),
                               // DEBUG: Always show this to verify the data
                               Builder(

@@ -23,6 +23,7 @@ class ProfileController extends GetxController {
   TextEditingController phoneController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController gMeetController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
 
   TextEditingController lNameController = TextEditingController();
   RxBool isLoadingProfile = false.obs;
@@ -60,6 +61,7 @@ class ProfileController extends GetxController {
         passwordController.text = getTeacher[0].password;
         emailController.text = getTeacher[0].email;
         gMeetController.text = getTeacher[0].gMeetLink ?? '';
+        addressController.text = getTeacher[0].address ?? '';
       } else {
         if (response != null) {
           throw Exception(
@@ -207,6 +209,7 @@ class ProfileController extends GetxController {
         emailController.clear();
         phoneController.clear();
         passwordController.clear();
+        addressController.clear();
       } else {
         Get.showSnackbar(const GetSnackBar(
           message: 'Invalid request',

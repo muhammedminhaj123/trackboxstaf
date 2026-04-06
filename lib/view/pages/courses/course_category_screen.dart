@@ -457,7 +457,7 @@ class _CourseCategoryDetailsScreenState
                                   tabs: [
                                     Tab(
                                       child: Text(
-                                        'Days',
+                                        'Modules',
                                         style: GoogleFonts.plusJakartaSans(
                                           fontWeight: FontWeight.w700,
                                         ),

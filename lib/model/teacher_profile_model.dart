@@ -16,6 +16,7 @@ class TeacherProfileModel {
   String profilePhotoName;
   String? gMeetLink;
   String? registeredDate;
+  String? address;
 
   TeacherProfileModel({
     required this.userId,
@@ -34,6 +35,7 @@ class TeacherProfileModel {
     required this.userActiveStatus,
     this.gMeetLink,
     this.registeredDate,
+    this.address,
   });
 
   factory TeacherProfileModel.fromJson(Map<String, dynamic> json) =>
@@ -53,7 +55,8 @@ class TeacherProfileModel {
           profilePhotoPath: json["Profile_Photo_Path"] ?? '',
           profilePhotoName: json["Profile_Photo_Name"] ?? '',
           gMeetLink: json["Live_Link"] ?? '',
-          registeredDate: json["Registered_Date"] ?? '');
+          registeredDate: json["Registered_Date"] ?? '',
+          address: json["Address"] ?? '');
 
   Map<String, dynamic> toJson() => {
         "User_ID": userId,
@@ -72,5 +75,6 @@ class TeacherProfileModel {
         "Profile_Photo_Name": profilePhotoName,
         "Live_Link": gMeetLink,
         "Registered_Date": registeredDate,
+        "Address": address,
       };
 }
