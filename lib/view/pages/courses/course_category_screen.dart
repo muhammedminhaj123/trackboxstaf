@@ -9,9 +9,8 @@ import 'package:breffini_staff/core/utils/extentions.dart';
 import 'package:breffini_staff/core/utils/pref_utils.dart';
 import 'package:breffini_staff/http/http_urls.dart';
 import 'package:breffini_staff/view/pages/chats/widgets/loading_circle.dart';
-import 'package:breffini_staff/view/pages/courses/course_module_page.dart';
-import 'package:breffini_staff/view/pages/courses/course_overview_page.dart';
 import 'package:breffini_staff/view/pages/courses/day_category_screen.dart';
+import 'package:breffini_staff/view/pages/courses/widgets/grid_view_day_widget.dart';
 import 'package:breffini_staff/view/pages/courses/widgets/read_more_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
@@ -64,6 +63,15 @@ class _CourseCategoryDetailsScreenState
       (timeStamp) {
         controller.getCourseInfo(courseId: widget.courseId);
         controller.getSectionByCourse(courseId: widget.courseId.toString());
+        // Fetch modules first, then days
+        controller
+            .getCoursesModules(courseId: widget.courseId.toString())
+            .then((_) {
+          if (controller.courseModulesList.isNotEmpty) {
+            enrolController.getBatchWithDays(widget.courseId.toString(),
+                controller.courseModulesList[0].moduleId.toString());
+          }
+        });
       },
     );
 
@@ -449,7 +457,7 @@ class _CourseCategoryDetailsScreenState
                                   tabs: [
                                     Tab(
                                       child: Text(
-                                        'Modules',
+                                        'Days',
                                         style: GoogleFonts.plusJakartaSans(
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -470,17 +478,36 @@ class _CourseCategoryDetailsScreenState
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 16),
-                                        child: CourseModulePage(
-                                          isFromBatch: widget.isFromBatch,
-                                          batchId: widget.batchId,
-                                          badgeIcons: const [
-                                            'assets/images/Bronze.png',
-                                            'assets/images/Silver.png',
-                                            'assets/images/Gold.png',
-                                          ],
-                                          courseId: widget.courseId,
-                                          isLibrary: false,
-                                        ),
+                                        child: controller.courseModulesList.isEmpty
+                                            ? const Center(
+                                                child: Text('No Days found'),
+                                              )
+                                            : enrolController.isLoading.value
+                                                ? const Center(
+                                                    child: LoadingCircle(),
+                                                  )
+                                                : GridViewDayWidget(
+                                                    batchDays: enrolController
+                                                        .batchDaysList,
+                                                    onDayTapped: (day) {
+                                                      Get.to(() => DayCategoryScreen(
+                                                          isTab: false,
+                                                          isLibrary: false,
+                                                          isFromBatch:
+                                                              widget.isFromBatch,
+                                                          batchId: widget.batchId,
+                                                          dayId:
+                                                              day.daysId.toString(),
+                                                          courseId: widget.courseId
+                                                              .toString(),
+                                                          moduleId: controller
+                                                              .courseModulesList[0]
+                                                              .moduleId
+                                                              .toString(),
+                                                          appBarTitle:
+                                                              '${controller.courseInfo[0].courseName}-${day.dayName}'));
+                                                    },
+                                                  ),
                                       ),
                                     ],
                                   ),
