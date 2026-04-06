@@ -155,9 +155,10 @@ Widget buildMessageSection({
   required bool isSendingMessage,
 }) {
   return Container(
-    height: height ?? 64.h,
+    height: isVoiceMessage ? null : (height ?? 64.h),
     decoration: const BoxDecoration(color: ColorResources.colorwhite),
     child: Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         // SizedBox(height: 12.h),
         imageWidget,

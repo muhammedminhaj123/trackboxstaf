@@ -29,7 +29,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:breffini_staff/core/theme/color_resources.dart';
-import 'package:breffini_staff/view/pages/calls/one_to_one_call_screen.dart';
+import 'package:breffini_staff/view/pages/calls/student_batch_list_screen.dart';
 import 'package:breffini_staff/view/pages/chats/student_chat_history_screen.dart';
 
 import 'package:breffini_staff/view/pages/live/live_page.dart';
@@ -61,7 +61,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     const TeacherChatHistoryScreen(),
     // const CallLogScreen(),
-    const OneToOneCallScreen(),
+    const StudentBatchListScreen(),
     ExamsScreen(),
     const LivePage(),
     const ProfileScreen(),

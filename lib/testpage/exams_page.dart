@@ -261,12 +261,9 @@ class _ExamsScreenState extends State<ExamsScreen> {
       pinned: true,
       backgroundColor: Colors.white,
       elevation: 0,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: ColorResources.colorgrey500),
-        onPressed: () => Navigator.pop(context),
-      ),
+      automaticallyImplyLeading: false,
       flexibleSpace: FlexibleSpaceBar(
-        titlePadding: EdgeInsets.only(left: 48.w, bottom: 16.h),
+        titlePadding: EdgeInsets.only(left: 16.w, bottom: 16.h),
         title: Text(
           "Exam Results",
           style: GoogleFonts.plusJakartaSans(

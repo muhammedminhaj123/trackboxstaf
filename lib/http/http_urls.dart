@@ -79,4 +79,7 @@ class HttpUrls {
 
   // Exam Results
   static String getExamResults = '/student/Get_Exam_Results/';
+
+  static String getFacultyBatchStudents =
+      '/teacher/Get_Faculty_Batch_Students/';
 }
