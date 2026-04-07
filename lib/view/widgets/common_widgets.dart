@@ -128,7 +128,7 @@ Widget datePickerWidget({
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.w),
           borderSide: const BorderSide(color: ColorResources.colorgrey300),
-        ), 
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.w),
           borderSide: const BorderSide(color: ColorResources.colorgrey200),
@@ -363,8 +363,6 @@ Widget courseProfileWidget(
               children: [
                 Text(
                   courseName,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.plusJakartaSans(
                     color: ColorResources.colorgrey700,
                     fontSize: 14.sp,
@@ -375,16 +373,14 @@ Widget courseProfileWidget(
                   height: 4,
                 ),
                 batchName.isNotEmpty
-                  ? Text(
-                      '$batchName',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.plusJakartaSans(
-                        color: ColorResources.colorgrey600,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    )
+                    ? Text(
+                        '$batchName',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: ColorResources.colorgrey600,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )
                     : const SizedBox(),
                 const SizedBox(
                   height: 4,
@@ -392,8 +388,6 @@ Widget courseProfileWidget(
                 isProfile
                     ? Text(
                         batchStart ?? '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.plusJakartaSans(
                           color: ColorResources.colorgrey600,
                           fontSize: 14.sp,
@@ -408,16 +402,14 @@ Widget courseProfileWidget(
                     : SizedBox(),
                 isProfile
                     ? showBatchEnd
-                          ? Text(
-                              batchEnd ?? '',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.plusJakartaSans(
-                                color: ColorResources.colorgrey600,
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            )
+                        ? Text(
+                            batchEnd ?? '',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: ColorResources.colorgrey600,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          )
                         : SizedBox()
                     : SizedBox(),
                 isProfile
@@ -430,8 +422,6 @@ Widget courseProfileWidget(
                 isProfile
                     ? Text(
                         batchTeacher ?? '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.plusJakartaSans(
                           color: ColorResources.colorgrey600,
                           fontSize: 14.sp,
@@ -447,8 +437,6 @@ Widget courseProfileWidget(
                 isProfile
                     ? Text(
                         oneOnOneTeacher ?? '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.plusJakartaSans(
                           color: ColorResources.colorgrey600,
                           fontSize: 14.sp,

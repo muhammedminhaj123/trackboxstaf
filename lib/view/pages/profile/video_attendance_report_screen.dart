@@ -19,11 +19,14 @@ class VideoAttendanceReportScreen extends StatefulWidget {
   });
 
   @override
-  State<VideoAttendanceReportScreen> createState() => _VideoAttendanceReportScreenState();
+  State<VideoAttendanceReportScreen> createState() =>
+      _VideoAttendanceReportScreenState();
 }
 
-class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScreen> {
-  final VideoAttendanceController controller = Get.put(VideoAttendanceController());
+class _VideoAttendanceReportScreenState
+    extends State<VideoAttendanceReportScreen> {
+  final VideoAttendanceController controller =
+      Get.put(VideoAttendanceController());
 
   @override
   void initState() {
@@ -53,7 +56,11 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
         backgroundColor: ColorResources.colorwhite,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: ColorResources.colorBlack, size: 20,),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: ColorResources.colorBlack,
+            size: 20,
+          ),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -75,7 +82,8 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.assignment_turned_in_outlined, size: 60.sp, color: ColorResources.colorgrey400),
+                Icon(Icons.assignment_turned_in_outlined,
+                    size: 60.sp, color: ColorResources.colorgrey400),
                 SizedBox(height: 16.h),
                 Text(
                   'No attendance records found',
@@ -117,8 +125,6 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
                       Expanded(
                         child: Text(
                           report.contentName ?? 'Unknown Content',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.plusJakartaSans(
                             color: ColorResources.colorBlack,
                             fontSize: 15.sp,
@@ -127,7 +133,8 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 4.h),
                         decoration: BoxDecoration(
                           color: Colors.green.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4.r),
@@ -148,12 +155,16 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
                   SizedBox(height: 12.h),
                   _buildInfoRow(Icons.book_outlined, report.courseName ?? ''),
                   SizedBox(height: 6.h),
-                  _buildInfoRow(Icons.calendar_today_outlined, 'Watched on: ${formatDate(report.updateTime ?? '')}'),
+                  _buildInfoRow(Icons.calendar_today_outlined,
+                      'Watched on: ${formatDate(report.updateTime ?? '')}'),
                   SizedBox(height: 6.h),
-                  _buildInfoRow(Icons.group_outlined, 'Batch: ${report.batchName ?? 'N/A'}'),
-                  if (report.teacherName != null && report.teacherName!.isNotEmpty) ...[
+                  _buildInfoRow(Icons.group_outlined,
+                      'Batch: ${report.batchName ?? 'N/A'}'),
+                  if (report.teacherName != null &&
+                      report.teacherName!.isNotEmpty) ...[
                     SizedBox(height: 6.h),
-                    _buildInfoRow(Icons.person_outline, 'Teacher: ${report.teacherName}'),
+                    _buildInfoRow(
+                        Icons.person_outline, 'Teacher: ${report.teacherName}'),
                   ],
                 ],
               ),
@@ -172,8 +183,6 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
         Expanded(
           child: Text(
             text,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.plusJakartaSans(
               color: ColorResources.colorgrey700,
               fontSize: 13.sp,
