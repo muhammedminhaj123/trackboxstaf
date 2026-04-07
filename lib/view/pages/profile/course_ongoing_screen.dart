@@ -126,7 +126,8 @@ class _CourseOngoingScreenState extends State<CourseOngoingScreen> {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: ColorResources.colorBlue600,
@@ -138,12 +139,14 @@ class _CourseOngoingScreenState extends State<CourseOngoingScreen> {
                               onPressed: () {
                                 Get.to(() => VideoAttendanceReportScreen(
                                       studentId: widget.studentId,
-                                      courseId: studentCourseController.studentCourseList[index].courseId.toString(),
+                                      courseId: studentCourseController
+                                          .studentCourseList[index].courseId
+                                          .toString(),
                                       studentName: widget.studentName,
                                     ));
                               },
                               child: Text(
-                                'Video Attendance Report',
+                                'View Attendance Report',
                                 style: GoogleFonts.plusJakartaSans(
                                   color: Colors.white,
                                   fontSize: 13.sp,

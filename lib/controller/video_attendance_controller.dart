@@ -7,9 +7,11 @@ class VideoAttendanceController extends GetxController {
   var attendanceReport = <VideoAttendanceRow>[].obs;
   RxBool isLoading = false.obs;
 
-  Future<void> getVideoAttendanceReport({required String studentId, required String courseId}) async {
+  Future<void> getVideoAttendanceReport(
+      {required String studentId, required String courseId}) async {
     isLoading.value = true;
-    final String endpoint = '${HttpUrls.getVideoAttendanceReport}?Course_ID=$courseId&Student_ID=$studentId';
+    final String endpoint =
+        '${HttpUrls.getVideoAttendanceReport}?Course_ID=$courseId&Student_ID=$studentId';
 
     try {
       final response = await HttpRequest.httpGetRequest(
@@ -18,7 +20,9 @@ class VideoAttendanceController extends GetxController {
       );
 
       if (response != null && response.statusCode == 200) {
-        final videoAttendanceReportModel = VideoAttendanceReportModel.fromJson(response.data);
+        print("attendence:$response");
+        final videoAttendanceReportModel =
+            VideoAttendanceReportModel.fromJson(response.data);
         attendanceReport.value = videoAttendanceReportModel.rows ?? [];
       } else {
         attendanceReport.clear();

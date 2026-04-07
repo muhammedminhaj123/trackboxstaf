@@ -19,11 +19,14 @@ class VideoAttendanceReportScreen extends StatefulWidget {
   });
 
   @override
-  State<VideoAttendanceReportScreen> createState() => _VideoAttendanceReportScreenState();
+  State<VideoAttendanceReportScreen> createState() =>
+      _VideoAttendanceReportScreenState();
 }
 
-class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScreen> {
-  final VideoAttendanceController controller = Get.put(VideoAttendanceController());
+class _VideoAttendanceReportScreenState
+    extends State<VideoAttendanceReportScreen> {
+  final VideoAttendanceController controller =
+      Get.put(VideoAttendanceController());
 
   @override
   void initState() {
@@ -38,8 +41,18 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
 
   String formatDate(String dateStr) {
     try {
-      DateTime date = DateTime.parse(dateStr);
-      return DateFormat('dd MMM yyyy, hh:mm a').format(date);
+      DateTime date = DateTime.parse(dateStr).toLocal();
+      return DateFormat('dd MMM yyyy').format(date);
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  String formatTimeOnly(String dateStr) {
+    try {
+      if (dateStr.isEmpty) return 'N/A';
+      DateTime date = DateTime.parse(dateStr).toLocal();
+      return DateFormat('hh:mm a').format(date);
     } catch (e) {
       return dateStr;
     }
@@ -53,7 +66,11 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
         backgroundColor: ColorResources.colorwhite,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: ColorResources.colorBlack, size: 20,),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: ColorResources.colorBlack,
+            size: 20,
+          ),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -75,7 +92,8 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.assignment_turned_in_outlined, size: 60.sp, color: ColorResources.colorgrey400),
+                Icon(Icons.assignment_turned_in_outlined,
+                    size: 60.sp, color: ColorResources.colorgrey400),
                 SizedBox(height: 16.h),
                 Text(
                   'No attendance records found',
@@ -125,7 +143,8 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 4.h),
                         decoration: BoxDecoration(
                           color: Colors.green.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4.r),
@@ -146,13 +165,29 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
                   SizedBox(height: 12.h),
                   _buildInfoRow(Icons.book_outlined, report.courseName ?? ''),
                   SizedBox(height: 6.h),
-                  _buildInfoRow(Icons.calendar_today_outlined, 'Watched on: ${formatDate(report.updateTime ?? '')}'),
+                  _buildInfoRow(
+                    Icons.calendar_today_outlined,
+                    'Date: ${formatDate(report.watchedDate ?? '')}',
+                  ),
                   SizedBox(height: 6.h),
-                  _buildInfoRow(Icons.group_outlined, 'Batch: ${report.batchName ?? 'N/A'}'),
-                  if (report.teacherName != null && report.teacherName!.isNotEmpty) ...[
-                    SizedBox(height: 6.h),
-                    _buildInfoRow(Icons.person_outline, 'Teacher: ${report.teacherName}'),
-                  ],
+                  _buildInfoRow(
+                    Icons.access_time,
+                    'Started at: ${formatTimeOnly(report.watchedDate ?? '')}',
+                  ),
+                  SizedBox(height: 6.h),
+                  _buildInfoRow(
+                    Icons.history,
+                    'Finished at: ${formatTimeOnly(report.updateTime ?? '')}',
+                  ),
+                  SizedBox(height: 6.h),
+                  _buildInfoRow(Icons.group_outlined,
+                      'Batch: ${report.batchName ?? 'N/A'}'),
+                  // if (report.teacherName != null &&
+                  //     report.teacherName!.isNotEmpty) ...[
+                  //   SizedBox(height: 6.h),
+                  //   _buildInfoRow(
+                  //       Icons.person_outline, 'Teacher: ${report.teacherName}'),
+                  // ],
                 ],
               ),
             );
