@@ -49,11 +49,14 @@ Widget commonTextFieldWidget({
   required TextEditingController controller,
   required String labelText,
   required ValueChanged<String> onChanged,
+  double? height,
+  int? maxLines,
 }) {
   return SizedBox(
-    height: 54.h,
+    height: height ?? 54.h,
     child: TextField(
       controller: controller,
+      maxLines: maxLines ?? 1,
       style: GoogleFonts.plusJakartaSans(
         color: ColorResources.colorBlue800,
         fontSize: 14.sp,
@@ -125,7 +128,7 @@ Widget datePickerWidget({
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.w),
           borderSide: const BorderSide(color: ColorResources.colorgrey300),
-        ),
+        ), 
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.w),
           borderSide: const BorderSide(color: ColorResources.colorgrey200),

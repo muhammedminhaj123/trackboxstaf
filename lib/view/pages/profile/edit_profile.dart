@@ -181,6 +181,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         commonTextFieldWidget(
                             controller: pController.addressController,
                             labelText: 'Address',
+                            height: 100.h,
+                            maxLines: 4,
                             onChanged: (value) {}),
                         /*SizedBox(
                           height: 6.h,
