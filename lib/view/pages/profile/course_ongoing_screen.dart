@@ -5,6 +5,7 @@ import 'package:breffini_staff/http/http_urls.dart';
 import 'package:breffini_staff/view/pages/chats/widgets/loading_circle.dart';
 import 'package:breffini_staff/view/pages/courses/course_category_screen.dart';
 import 'package:breffini_staff/view/widgets/common_widgets.dart';
+import 'package:breffini_staff/view/pages/profile/video_attendance_report_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -12,11 +13,13 @@ import 'package:google_fonts/google_fonts.dart';
 
 class CourseOngoingScreen extends StatefulWidget {
   final String studentId;
+  final String studentName;
   final bool isFromBatch;
   final String? batchId;
   const CourseOngoingScreen(
       {super.key,
       required this.studentId,
+      required this.studentName,
       required this.isFromBatch,
       this.batchId});
 
@@ -120,6 +123,33 @@ class _CourseOngoingScreenState extends State<CourseOngoingScreen> {
                                   batchStart: studentCourseController.studentCourseList[index].batchID != 0 ? "Batch start : ${formatDate(studentCourseController.studentCourseList[index].batchStart)}" : '',
                                   batchEnd: studentCourseController.studentCourseList[index].batchID != 0 ? "Batch End : ${formatDate(studentCourseController.studentCourseList[index].batchEnd)}" : 'Batch End : ',
                                   expiryDate: ''),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ColorResources.colorBlue600,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                minimumSize: Size(double.infinity, 40.h),
+                              ),
+                              onPressed: () {
+                                Get.to(() => VideoAttendanceReportScreen(
+                                      studentId: widget.studentId,
+                                      courseId: studentCourseController.studentCourseList[index].courseId.toString(),
+                                      studentName: widget.studentName,
+                                    ));
+                              },
+                              child: Text(
+                                'Video Attendance Report',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
                         ],

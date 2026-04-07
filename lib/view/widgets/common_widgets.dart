@@ -128,7 +128,7 @@ Widget datePickerWidget({
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.w),
           borderSide: const BorderSide(color: ColorResources.colorgrey300),
-        ),
+        ), 
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.w),
           borderSide: const BorderSide(color: ColorResources.colorgrey200),

@@ -82,4 +82,7 @@ class HttpUrls {
 
   static String getFacultyBatchStudents =
       '/teacher/Get_Faculty_Batch_Students/';
+
+  static String getVideoAttendanceReport =
+      '/teacher/Get_VideoAttendance_Report';
 }

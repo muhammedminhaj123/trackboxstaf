@@ -249,6 +249,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                     CourseOngoingScreen(
                       isFromBatch: false,
                       studentId: widget.studentId,
+                      studentName: widget.studentName,
                     ),
                   ],
                 ),
