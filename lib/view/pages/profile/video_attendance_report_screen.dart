@@ -117,6 +117,8 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
                       Expanded(
                         child: Text(
                           report.contentName ?? 'Unknown Content',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.plusJakartaSans(
                             color: ColorResources.colorBlack,
                             fontSize: 15.sp,
@@ -170,6 +172,8 @@ class _VideoAttendanceReportScreenState extends State<VideoAttendanceReportScree
         Expanded(
           child: Text(
             text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.plusJakartaSans(
               color: ColorResources.colorgrey700,
               fontSize: 13.sp,
