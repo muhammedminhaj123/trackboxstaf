@@ -36,10 +36,15 @@ class GridviewCategoryWidget extends StatelessWidget {
 
     return Obx(
       () {
+        final filteredSections = sectionByCourse
+            .where((s) => s.sectionName.trim().isNotEmpty)
+            .toList();
+
         return GridView.builder(
           physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
           itemCount:
-              isTab ? sectionByCourse.length + 1 : sectionByCourse.length,
+              isTab ? filteredSections.length + 1 : filteredSections.length,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             crossAxisSpacing: 10.0,
@@ -47,15 +52,19 @@ class GridviewCategoryWidget extends StatelessWidget {
             mainAxisExtent: 85,
           ),
           itemBuilder: (context, index) {
-            final isRecordingGrid = isTab && index == sectionByCourse.length;
+            final isRecordingGrid = isTab && index == filteredSections.length;
             final isSelected = selectedIndex == index;
+
+            final iconPath = index < sectionIcons.length 
+                ? sectionIcons[index] 
+                : "assets/images/listening.png";
 
             return GestureDetector(
               onTap: () {
                 if (isRecordingGrid) {
                   onRecordingTapped?.call();
                 } else {
-                  onDayTapped(sectionByCourse[index]);
+                  onDayTapped(filteredSections[index]);
                 }
               },
               child: Container(
@@ -72,11 +81,11 @@ class GridviewCategoryWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Image.asset(sectionIcons[index]),
+                      Image.asset(iconPath),
                       Text(
                         isRecordingGrid
                             ? "Recordings"
-                            : sectionByCourse[index].sectionName,
+                            : filteredSections[index].sectionName,
                         style: GoogleFonts.plusJakartaSans(
                           color: ColorResources.colorgrey700,
                           fontSize: 14,
