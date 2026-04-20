@@ -26,81 +26,71 @@ class GridviewCategoryWidget extends StatelessWidget {
     List<String> sectionIcons = [
       "assets/images/listening.png",
       "assets/images/reading.png",
-      "assets/images/writing.png",
-      "assets/images/speaking.png"
+      // "assets/images/writing.png",
+      // "assets/images/speaking.png",
     ];
 
     if (isTab) {
       sectionIcons.add("assets/images/speaking.png"); // Only add recording icon
     }
 
-    return Obx(
-      () {
-        final filteredSections = sectionByCourse
-            .where((s) => s.sectionName.trim().isNotEmpty)
-            .toList();
+    return Obx(() {
+      final filteredSections = sectionByCourse
+          .where((s) => s.sectionName.trim().isNotEmpty)
+          .toList();
 
-        return GridView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemCount:
-              isTab ? filteredSections.length + 1 : filteredSections.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10.0,
-            mainAxisSpacing: 10.0,
-            mainAxisExtent: 85,
-          ),
-          itemBuilder: (context, index) {
-            final isRecordingGrid = isTab && index == filteredSections.length;
-            final isSelected = selectedIndex == index;
+      return GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: filteredSections.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10.0,
+          mainAxisSpacing: 10.0,
+          mainAxisExtent: 85,
+        ),
+        itemBuilder: (context, index) {
+          final isSelected = selectedIndex == index;
 
-            final iconPath = index < sectionIcons.length 
-                ? sectionIcons[index] 
-                : "assets/images/listening.png";
+          final iconPath = index < sectionIcons.length
+              ? sectionIcons[index]
+              : "assets/images/listening.png";
 
-            return GestureDetector(
-              onTap: () {
-                if (isRecordingGrid) {
-                  onRecordingTapped?.call();
-                } else {
-                  onDayTapped(filteredSections[index]);
-                }
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: ColorResources.colorwhite,
-                  borderRadius: BorderRadius.circular(8.0),
-                  border: isSelected
-                      ? Border.all(color: Colors.blue, width: 2)
-                      : null,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Image.asset(iconPath),
-                      Text(
-                        isRecordingGrid
-                            ? "Recordings"
-                            : filteredSections[index].sectionName,
-                        style: GoogleFonts.plusJakartaSans(
-                          color: ColorResources.colorgrey700,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
+          return GestureDetector(
+            onTap: () {
+              onDayTapped(filteredSections[index]);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: ColorResources.colorwhite,
+                borderRadius: BorderRadius.circular(8.0),
+                border: isSelected
+                    ? Border.all(color: Colors.blue, width: 2)
+                    : null,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Image.asset(iconPath),
+                    Text(
+                      filteredSections[index].sectionName,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: ColorResources.colorgrey700,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            );
-          },
-        );
-      },
-    );
+            ),
+          );
+        },
+      );
+    });
   }
 }
 
@@ -115,17 +105,9 @@ void showCustomBottomSheet(BuildContext context) {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(
-              height: 20,
-            ),
-            Image.asset(
-              'assets/images/lockblue.png',
-              width: 80,
-              height: 80,
-            ),
-            const SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
+            Image.asset('assets/images/lockblue.png', width: 80, height: 80),
+            const SizedBox(height: 20),
             Text(
               "Test Locked",
               style: GoogleFonts.plusJakartaSans(
@@ -134,9 +116,7 @@ void showCustomBottomSheet(BuildContext context) {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             Text(
               "This test is currently locked for students.\nYou can unlock it to allow access.",
               style: GoogleFonts.plusJakartaSans(
@@ -146,77 +126,10 @@ void showCustomBottomSheet(BuildContext context) {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(
-              height: 20,
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.pop(context);
-                showCustomBottomSheet2(context);
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: ColorResources.colorwhite,
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                padding: EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    Image.asset(
-                      'assets/images/unlock.png',
-                      width: 20,
-                      height: 20,
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      "Unlock Test",
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Color(0xff6A7487),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: ColorResources.colorwhite,
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-              padding: EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Image.asset(
-                    'assets/images/eye.png',
-                    width: 20,
-                    height: 20,
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    "View Test",
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Color(0xff6A7487),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(
-              height: 40,
-            ),
+            const SizedBox(height: 40),
+          ],
+        ),
+      );
           ],
         ),
       );
@@ -235,17 +148,9 @@ void showCustomBottomSheet2(BuildContext context) {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(
-              height: 20,
-            ),
-            Image.asset(
-              'assets/images/lockblue.png',
-              width: 80,
-              height: 80,
-            ),
-            const SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
+            Image.asset('assets/images/lockblue.png', width: 80, height: 80),
+            const SizedBox(height: 20),
             Text(
               "Confirm Unlock Test",
               style: GoogleFonts.plusJakartaSans(
@@ -254,9 +159,7 @@ void showCustomBottomSheet2(BuildContext context) {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             Text(
               "Are you sure you want to unlock this test? \nOnce unlocked, students will have access.",
               style: GoogleFonts.plusJakartaSans(
@@ -266,67 +169,65 @@ void showCustomBottomSheet2(BuildContext context) {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100.w)),
-                    backgroundColor: ColorResources.colorBlue500,
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100.w),
+                  ),
+                  backgroundColor: ColorResources.colorBlue500,
 
-                    // side: const BorderSide(
-                    //   color: ColorResources
-                    //       .colorBlue600, // Define your border color here
-                    //   width: 1, // Define your border width here
-                    // ),
+                  // side: const BorderSide(
+                  //   color: ColorResources
+                  //       .colorBlue600, // Define your border color here
+                  //   width: 1, // Define your border width here
+                  // ),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  showCustomBottomSheet3(context);
+                },
+                child: Text(
+                  'Confirm Unlock',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: ColorResources.colorwhite,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    showCustomBottomSheet3(context);
-                  },
-                  child: Text(
-                    'Confirm Unlock',
-                    style: GoogleFonts.plusJakartaSans(
-                      color: ColorResources.colorwhite,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  )),
+                ),
+              ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100.w)),
-                    backgroundColor: ColorResources.colorwhite,
-                    side: const BorderSide(
-                      color: Color(0xffBAC1CA), // Define your border color here
-                      width: 1, // Define your border width here
-                    ),
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100.w),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    'Cancel',
-                    style: GoogleFonts.plusJakartaSans(
-                      color: ColorResources.colorBlue600,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  )),
+                  backgroundColor: ColorResources.colorwhite,
+                  side: const BorderSide(
+                    color: Color(0xffBAC1CA), // Define your border color here
+                    width: 1, // Define your border width here
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: ColorResources.colorBlue600,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(
-              height: 40,
-            ),
+            const SizedBox(height: 40),
           ],
         ),
       );
@@ -345,11 +246,7 @@ void showCustomBottomSheet3(BuildContext context) {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset(
-              'assets/images/Done.png',
-              width: 150,
-              height: 150,
-            ),
+            Image.asset('assets/images/Done.png', width: 150, height: 150),
             Text(
               "Test Unlocked",
               style: GoogleFonts.plusJakartaSans(
@@ -358,9 +255,7 @@ void showCustomBottomSheet3(BuildContext context) {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             Text(
               "The test is now unlocked and \nis accessible to students.",
               style: GoogleFonts.plusJakartaSans(
@@ -370,38 +265,36 @@ void showCustomBottomSheet3(BuildContext context) {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100.w)),
-                    backgroundColor: ColorResources.colorBlue500,
-
-                    // side: const BorderSide(
-                    //   color: ColorResources
-                    //       .colorBlue600, // Define your border color here
-                    //   width: 1, // Define your border width here
-                    // ),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100.w),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    'Done',
-                    style: GoogleFonts.plusJakartaSans(
-                      color: ColorResources.colorwhite,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  )),
+                  backgroundColor: ColorResources.colorBlue500,
+
+                  // side: const BorderSide(
+                  //   color: ColorResources
+                  //       .colorBlue600, // Define your border color here
+                  //   width: 1, // Define your border width here
+                  // ),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  'Done',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: ColorResources.colorwhite,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(
-              height: 40,
-            ),
+            const SizedBox(height: 40),
           ],
         ),
       );
