@@ -18,6 +18,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:breffini_staff/view/pages/courses/widgets/course_attendance_report_view.dart';
 
 class LivePage extends StatefulWidget {
   const LivePage({super.key});
@@ -179,7 +180,7 @@ class _LivePageState extends State<LivePage> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: DefaultTabController(
-      length: 1,
+      length: 2,
       child: WillPopScope(
         onWillPop: _onWillPop,
         child: Scaffold(
@@ -220,6 +221,7 @@ class _LivePageState extends State<LivePage> {
                     // Tab(text: 'Upcoming Live'),
                     // Tab(text: 'Completed Live'),
                     Tab(text: 'Course Materials'),
+                    Tab(text: 'Attendance Report'),
                   ],
                 ),
               ),
@@ -517,6 +519,7 @@ class _LivePageState extends State<LivePage> {
             CoursesOfTeacherScreen(
               isFromBatch: false,
             ),
+            const CourseAttendanceReportView(),
           ]),
         ),
       ),

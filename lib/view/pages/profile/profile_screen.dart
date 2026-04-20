@@ -7,6 +7,7 @@ import 'package:breffini_staff/core/theme/color_resources.dart';
 import 'package:breffini_staff/core/utils/image_constants.dart';
 import 'package:breffini_staff/http/http_urls.dart';
 import 'package:breffini_staff/http/profile_service.dart';
+import 'package:breffini_staff/controller/staff_attendance_controller.dart';
 import 'package:breffini_staff/view/pages/home_screen.dart';
 import 'package:breffini_staff/view/pages/profile/batch_screen.dart';
 import 'package:breffini_staff/view/pages/profile/edit_profile.dart';
@@ -39,6 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Get.find<CourseContentController>();
 
   final TeacherProfileService service = TeacherProfileService();
+  final StaffAttendanceController attendanceController = Get.put(StaffAttendanceController());
 
   bool showWorkExperience = false;
   bool showQualification = false;
@@ -289,6 +291,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
 
                         SizedBox(height: 16.h),
+                        
+                        _buildAttendanceSection(),
+                        
+                        SizedBox(height: 16.h),
 
                         /// ASSIGNED BATCHES
                         InkWell(
@@ -371,5 +377,72 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildAttendanceSection() {
+    return Obx(() {
+      String status = attendanceController.currentStatus.value;
+
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: ColorResources.colorwhite,
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Attendance",
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: ColorResources.colorgrey800,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  status == "Pending" || status == "Checked Out" ? "Not Checked In" : "Checked In",
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                    color: status == "Pending" || status == "Checked Out" ? Colors.red : Colors.green,
+                  ),
+                ),
+              ],
+            ),
+            if (attendanceController.isLoading.value)
+              SizedBox(
+                height: 24.h,
+                width: 24.w,
+                child: const CircularProgressIndicator(strokeWidth: 2),
+              )
+            else if (status == "Pending" || status == "Checked Out")
+              ElevatedButton(
+                onPressed: () => attendanceController.markAttendance("Checked In"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColorResources.colorBlue600,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                ),
+                child: Text("Check In", style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+              )
+            else if (status == "Checked In")
+              ElevatedButton(
+                onPressed: () => attendanceController.markAttendance("Checked Out"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade600,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                ),
+                child: Text("Check Out", style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+              )
+          ],
+        ),
+      );
+    });
   }
 }

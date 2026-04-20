@@ -216,10 +216,9 @@ Widget batchOfTeacherWidget({
   required String batchNames,
   required BuildContext context,
   required String studentsName,
-  required String studentCount,
   required String batchStart,
   required String batchEnd,
-  required String timeSlot,
+
   required String badgeText,
   required Color? color,
   required Color? txtColor,
@@ -304,50 +303,7 @@ Widget batchOfTeacherWidget({
                 ),
               ],
             ),
-            SizedBox(
-              height: 12.w,
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.access_time_rounded,
-                  size: 20,
-                  color: ColorResources.colorBlack,
-                ),
-                const SizedBox(
-                  width: 4,
-                ),
-                Text(
-                  timeSlot,
-                  maxLines: 1,
-                  overflow: TextOverflow.visible, // No ellipsis
-                  style: TextStyle(
-                    color: const Color.fromARGB(255, 0, 0, 0),
-                    fontSize: 14.sp,
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(
-                  width: 6.w,
-                ),
-                Expanded(
-                  // Allow the text to take available space
-                  child: Text(
-                    studentCount.replaceAll(
-                        RegExp(r'[\[\]]'), ''), // Remove square brackets
-                    style: TextStyle(
-                      color: const Color(0xFF6A7487),
-                      fontSize: 15.sp,
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: FontWeight.w500,
-                    ),
-                    softWrap: true, // Allow text to break into a new line
-                  ),
-                ),
-              ],
-            ),
+
             SizedBox(
               height: 8.h,
             ),
