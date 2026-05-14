@@ -165,29 +165,17 @@ class _VideoAttendanceReportScreenState
                   SizedBox(height: 12.h),
                   _buildInfoRow(Icons.book_outlined, report.courseName ?? ''),
                   SizedBox(height: 6.h),
-                  _buildInfoRow(
-                    Icons.calendar_today_outlined,
-                    'Date: ${formatDate(report.watchedDate ?? '')}',
-                  ),
-                  SizedBox(height: 6.h),
-                  _buildInfoRow(
-                    Icons.access_time,
-                    'Started at: ${formatTimeOnly(report.watchedDate ?? '')}',
-                  ),
-                  SizedBox(height: 6.h),
-                  _buildInfoRow(
-                    Icons.history,
-                    'Finished at: ${formatTimeOnly(report.updateTime ?? '')}',
-                  ),
+                  _buildInfoRow(Icons.calendar_today_outlined,
+                      'Watched on: ${formatDate(report.updateTime ?? '')}'),
                   SizedBox(height: 6.h),
                   _buildInfoRow(Icons.group_outlined,
                       'Batch: ${report.batchName ?? 'N/A'}'),
-                  // if (report.teacherName != null &&
-                  //     report.teacherName!.isNotEmpty) ...[
-                  //   SizedBox(height: 6.h),
-                  //   _buildInfoRow(
-                  //       Icons.person_outline, 'Teacher: ${report.teacherName}'),
-                  // ],
+                  if (report.teacherName != null &&
+                      report.teacherName!.isNotEmpty) ...[
+                    SizedBox(height: 6.h),
+                    _buildInfoRow(
+                        Icons.person_outline, 'Teacher: ${report.teacherName}'),
+                  ],
                 ],
               ),
             );

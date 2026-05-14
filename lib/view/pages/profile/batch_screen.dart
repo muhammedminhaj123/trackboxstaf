@@ -134,7 +134,6 @@ class _BatchScreenState extends State<BatchScreen> {
                                             null
                                         ? ColorResources.colorgrey600
                                         : const Color.fromARGB(255, 0, 133, 60),
-                                    timeSlot: 'Time slots :',
                                     batchNames: profileController
                                         .getBatchesOfTeacher[index].courseName,
                                     context: context,
@@ -147,10 +146,8 @@ class _BatchScreenState extends State<BatchScreen> {
                                                 .batchIDs !=
                                             null
                                         ? 'Batch : ${profileController.getBatchesOfTeacher[index].batchNames}'
-                                        : 'No Batch assigned',
-                                    studentCount: profileController
-                                        .getBatchesOfTeacher[index].timeSlots
-                                        .toString());
+                                        : 'No Batch assigned');
+
                               },
                             )
                           ],
